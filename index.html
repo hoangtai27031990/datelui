@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HỆ THỐNG QUẢN LÝ HSD – Saigon Co.op</title>
+
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://unpkg.com/html5-qrcode"></script>
+<script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+
+<style>
+body{background:#f3f4f6}
+.card{background:#fff;border-radius:14px;box-shadow:0 4px 16px rgba(0,0,0,.08)}
+.brand-bg{background:#c40018}
+.brand-text{color:#c40018}
+.warning20{color:#b91c1c;font-weight:700}
+.warning30{color:#c2410c;font-weight:700}
+
+/* 30% blink */
+.blink30{animation: blink30 .6s linear infinite;border:2px solid #fb923c}
+@keyframes blink30{
+  0%{background:#fff3e0}
+  50%{background:#ff9800;box-shadow:0 0 18px rgba(251,146,60,1)}
+  100%{background:#fff3e0}
+}
+.blink20{animation: blink20 .7s ease-in-out infinite}
+@keyframes blink20{
+  0%,100%{background:#fff1f2}
+  50%{background:#fee2e2;box-shadow:0 0 18px rgba(239,68,68,1)}
+}
+
+/* sidebar */
+#sidebar{position:fixed;top:0;left:0;width:260px;height:100%;background:#fff;box-shadow:4px 0 16px rgba(0,0,0,.15);transform:translateX(-100%);transition:.3s;z-index:1000}
+#sidebar.active{transform:translateX(0)}
+#overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);display:none;z-index:900}
+#overlay.active{display:block}
+
+/* chat */
+.chat-box{height:420px;overflow:auto;background:#fafafa;border:1px solid #e5e7eb;border-radius:10px;padding:10px}
+.chat-item{background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:6px 10px;margin-bottom:6px;font-family:monospace}
+</style>
+</head>
+
+<body class="max-w-xl mx-auto p-3">
+
+<div id="sidebar">
+  <div class="p-4 border-b text-center">
+    <img src="https://upload.wikimedia.org/wikipedia/vi/3/3f/Saigon_Co.op_logo.png" class="mx-auto mb-2" width="140">
+    <div class="font-bold brand-text">Saigon Co.op</div>
+  </div>
+  <div class="p-3 space-y-2">
+    <button onclick="showMain()" class="w-full text-left px-3 py-2 rounded bg-red-50">📦 Quản lý HSD</button>
+    <button onclick="showPrint()" class="w-full text-left px-3 py-2 rounded bg-slate-100">🖨 In bảng giá quầy</button>
+  </div>
+</div>
+<div id="overlay" onclick="toggleMenu()"></div>
+
+<div class="flex justify-between items-center mb-4 p-3 rounded-lg brand-bg text-white">
+  <div>
+    <div class="font-bold text-lg">HỆ THỐNG QUẢN LÝ HSD</div>
+    <div class="text-sm opacity-90">Saigon Co.op</div>
+  </div>
+  <button onclick="toggleMenu()" class="text-2xl">☰</button>
+</div>
+
+<!-- ================= TAB HSD (GIỮ NGUYÊN) ================= -->
+<div id="mainApp">
+
+<div class="card p-4 space-y-3">
+<label class="font-semibold">Barcode sản phẩm</label>
+<div class="flex gap-2">
+<input id="barcode" class="border p-2 rounded w-full">
+<button onclick="startScan()" class="brand-bg text-white px-3 rounded">Quét</button>
+</div>
+
+<div id="reader" class="hidden mt-2"></div>
+
+<label class="font-semibold">Ngày sản xuất (NSX)</label>
+<input type="date" id="nsx" class="border p-2 rounded w-full">
+
+<label class="font-semibold">Hạn sử dụng (HSD)</label>
+<input type="date" id="hsd" class="border p-2 rounded w-full">
+
+<div class="grid grid-cols-2 gap-2 pt-2">
+<button onclick="calculate()" class="brand-bg text-white py-2 rounded font-semibold">TÍNH KẾT QUẢ</button>
+<button onclick="resetForm()" class="bg-gray-500 text-white py-2 rounded font-semibold">TÍNH LẠI</button>
+</div>
+
+<div id="result" class="pt-2"></div>
+
+<div class="grid grid-cols-2 gap-2 pt-2">
+<button onclick="exportExcel()" class="bg-slate-700 text-white py-2 rounded">Xuất Excel</button>
+<button onclick="clearHistory()" class="bg-red-600 text-white py-2 rounded">Xóa lịch sử</button>
+</div>
+
+<div id="statistic" class="text-sm pt-2"></div>
+</div>
+
+<div class="card p-3 mt-4">
+<h2 class="font-bold brand-text mb-2">Lịch sử tính toán</h2>
+<div id="history" class="text-sm space-y-1 max-h-64 overflow-auto"></div>
+</div>
+
+</div>
+
+<!-- ================= TAB IN BẢNG GIÁ ================= -->
+<div id="printApp" class="hidden card p-4">
+
+<h2 class="font-bold brand-text mb-3">In bảng giá quầy</h2>
+
+<div class="flex flex-wrap gap-2 mb-2">
+<button onclick="startPrintScan()" class="brand-bg text-white px-3 py-2 rounded">📷 Quét barcode</button>
+<button onclick="exportText()" class="bg-slate-700 text-white px-3 py-2 rounded">⬇ Xuất TXT</button>
+<button onclick="clearPrintHistory()" class="bg-red-600 text-white px-3 py-2 rounded">🗑 Xóa</button>
+</div>
+
+<div id="printReader" class="hidden mb-2"></div>
+
+<div class="chat-box" id="printHistory"></div>
+
+</div>
+
+<script>
+/* ===== MENU ===== */
+function toggleMenu(){
+ sidebar.classList.toggle("active");
+ overlay.classList.toggle("active");
+}
+function showMain(){
+ mainApp.classList.remove("hidden");
+ printApp.classList.add("hidden");
+ toggleMenu();
+}
+function showPrint(){
+ mainApp.classList.add("hidden");
+ printApp.classList.remove("hidden");
+ toggleMenu();
+}
+
+/* ===== HSD ===== */
+const historyKey="coop_hsd_history";
+let html5Qr=null;
+const barcodeInput=document.getElementById("barcode");
+const nsxInput=document.getElementById("nsx");
+const hsdInput=document.getElementById("hsd");
+const resultDiv=document.getElementById("result");
+const historyDiv=document.getElementById("history");
+const statDiv=document.getElementById("statistic");
+
+async function startScan(){
+ const reader=document.getElementById("reader");
+ reader.classList.remove("hidden");
+ if(!html5Qr) html5Qr=new Html5Qrcode("reader");
+ html5Qr.start({facingMode:"environment"},{fps:10,qrbox:250},code=>{
+  barcodeInput.value=code;
+  html5Qr.stop(); reader.classList.add("hidden");
+ },()=>{});
+}
+
+function calculate(){
+ const nsx=new Date(nsxInput.value);
+ const hsd=new Date(hsdInput.value);
+ if(!nsxInput.value||!hsdInput.value||hsd<=nsx){alert("Dữ liệu không hợp lệ");return;}
+
+ const total=(hsd-nsx)/86400000;
+ const date30=new Date(nsx.getTime()+total*0.7*86400000);
+ const date20=new Date(nsx.getTime()+total*0.8*86400000);
+ const today=new Date();
+
+ let warn30="",warn20="",b30="",b20="",f30="Bình thường",f20="Bình thường";
+
+ if(today>=date30){warn30="⚠ Giải tồn";b30="blink30";f30="Giải tồn";}
+ if(today>=date20){warn20="⚠ Rút hàng";b20="blink20";f20="Rút hàng";}
+
+ resultDiv.innerHTML=`
+<div class="border p-3 mb-3 ${b30}">
+<b>MỐC 30%</b><br>${date30.toLocaleDateString("vi-VN")}
+<div>${warn30||"<span class='text-green-700'>Trong ngưỡng an toàn</span>"}</div>
+</div>
+
+<div class="border p-3 ${b20}">
+<b>MỐC 20%</b><br>${date20.toLocaleDateString("vi-VN")}
+<div>${warn20||"<span class='text-green-700'>Trong ngưỡng an toàn</span>"}</div>
+</div>
+`;
+ saveHistory(f30,f20);
+}
+
+function saveHistory(f30,f20){
+ let h=JSON.parse(localStorage.getItem(historyKey)||"[]");
+ h.unshift({
+   Barcode:barcodeInput.value,
+   NSX:nsxInput.value,
+   HSD:hsdInput.value,
+   "Cảnh báo 30%":f30,
+   "Cảnh báo 20%":f20,
+   "Thời gian":new Date().toLocaleString("vi-VN")
+ });
+ localStorage.setItem(historyKey,JSON.stringify(h));
+ renderHistory();
+}
+function renderHistory(){
+ const h=JSON.parse(localStorage.getItem(historyKey)||"[]");
+ historyDiv.innerHTML=h.map(x=>`<div>${x.Barcode} | 30%:${x["Cảnh báo 30%"]} | 20%:${x["Cảnh báo 20%"]}</div>`).join("");
+ statDiv.innerHTML=`📦 ${h.length} bản ghi`;
+}
+function clearHistory(){localStorage.removeItem(historyKey);renderHistory();}
+function exportExcel(){
+ const h=JSON.parse(localStorage.getItem(historyKey)||"[]");
+ if(!h.length)return alert("Không có dữ liệu");
+ const ws=XLSX.utils.json_to_sheet(h);
+ const wb=XLSX.utils.book_new();
+ XLSX.utils.book_append_sheet(wb,ws,"HSD");
+ XLSX.writeFile(wb,"saigoncoop_hsd.xlsx");
+}
+function resetForm(){barcodeInput.value="";nsxInput.value="";hsdInput.value="";resultDiv.innerHTML="";}
+renderHistory();
+
+/* ===== TAB IN BẢNG GIÁ – GỘP TRÙNG ===== */
+const printKey="coop_print_history";
+let printQr=null;
+
+function startPrintScan(){
+ const reader=document.getElementById("printReader");
+ reader.classList.remove("hidden");
+ if(!printQr) printQr=new Html5Qrcode("printReader");
+ printQr.start({facingMode:"environment"},{fps:10,qrbox:250},code=>{
+   addOrIncreaseBarcode(code);
+   printQr.stop();
+   reader.classList.add("hidden");
+ },()=>{});
+}
+
+function addOrIncreaseBarcode(code){
+ let data=JSON.parse(localStorage.getItem(printKey)||"{}");
+
+ if(data[code]){
+   data[code]++;
+ }else{
+   data[code]=1;
+ }
+
+ localStorage.setItem(printKey,JSON.stringify(data));
+ renderPrintHistory();
+}
+
+function renderPrintHistory(){
+ const data=JSON.parse(localStorage.getItem(printKey)||"{}");
+ const box=document.getElementById("printHistory");
+
+ const lines=Object.entries(data).map(([bc,qty])=>{
+   return `<div class="chat-item">${bc},${qty};</div>`;
+ });
+
+ box.innerHTML=lines.join("");
+ box.scrollTop=0;
+}
+
+function exportText(){
+ const data=JSON.parse(localStorage.getItem(printKey)||"{}");
+ const entries=Object.entries(data);
+ if(!entries.length){alert("Không có dữ liệu");return;}
+
+ const content=entries.map(([bc,qty])=>`${bc},${qty};`).join("\n");
+ const blob=new Blob([content],{type:"text/plain"});
+ const a=document.createElement("a");
+ a.href=URL.createObjectURL(blob);
+ a.download="barcode_print.txt";
+ a.click();
+}
+
+function clearPrintHistory(){
+ localStorage.removeItem(printKey);
+ renderPrintHistory();
+}
+
+renderPrintHistory();
+</script>
+
+</body>
+</html>
