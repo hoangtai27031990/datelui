@@ -182,7 +182,14 @@ const overlay=document.getElementById("overlay");
 const mainApp=document.getElementById("mainApp");
 const printApp=document.getElementById("printApp");
 
-function toggleMenu(){sidebar.classList.toggle("active");overlay.classList.toggle("active")}
+function toggleMenu(){
+  // 🔥 STOP camera NGAY khi bấm menu
+  stopAllScanner();
+
+  sidebar.classList.toggle("active");
+  overlay.classList.toggle("active");
+}
+
 function stopAllScanner(){
   if(qr){
     qr.stop().then(()=>qr.clear()).catch(()=>{});
@@ -192,7 +199,9 @@ function stopAllScanner(){
     qr2.stop().then(()=>qr2.clear()).catch(()=>{});
     qr2 = null;
   }
+  isScanning = false;
 }
+
 
 function showMain(){
   stopAllScanner();
@@ -228,12 +237,18 @@ const scanConfigAndroidWeak = { fps: 10, qrbox: 250 };
 let qr=null,qr2=null,currentFilter="all";
 
 /* ================= SCAN MAIN ================= */
-  async function startScan(){
+let isScanning = false;
+
+async function startScan(){
 
   if(isIOS()){
     alert("⚠️ iPhone không hỗ trợ quét barcode ổn định.\nVui lòng nhập tay barcode.");
     return;
   }
+
+  // ⛔ Đang quét thì không cho quét tiếp
+  if(isScanning) return;
+  isScanning = true;
 
   // 👉 STOP camera cũ nếu còn
   if(qr){
@@ -262,12 +277,19 @@ let qr=null,qr2=null,currentFilter="all";
 
       qr.stop().then(() => {
         qr.clear();
+        qr = null;
         r.classList.add("hidden");
+        isScanning = false; // ✅ GIẢI PHÓNG TRẠNG THÁI
       });
     },
     () => {}
-  );
+  ).catch(err => {
+    // ❗ Nếu start lỗi → phải nhả trạng thái
+    isScanning = false;
+    r.classList.add("hidden");
+  });
 }
+
 /* ================= SCAN PRINT ================= */
 function startPrintScan(){
 
@@ -275,8 +297,7 @@ function startPrintScan(){
     alert(
       "⚠️ THIẾT BỊ iOS KHÔNG HỖ TRỢ QUÉT BARCODE\n\n" +
       "Vui lòng:\n" +
-      "• Dùng điện thoại Android\n" +
-      "• Hoặc nhập barcode thủ công"
+      "• Dùng điện thoại Android\n"
     );
     return;
   }
