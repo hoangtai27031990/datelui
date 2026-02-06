@@ -183,8 +183,31 @@ const mainApp=document.getElementById("mainApp");
 const printApp=document.getElementById("printApp");
 
 function toggleMenu(){sidebar.classList.toggle("active");overlay.classList.toggle("active")}
-function showMain(){mainApp.classList.remove("hidden");printApp.classList.add("hidden");toggleMenu()}
-function showPrint(){mainApp.classList.add("hidden");printApp.classList.remove("hidden");toggleMenu()}
+function stopAllScanner(){
+  if(qr){
+    qr.stop().then(()=>qr.clear()).catch(()=>{});
+    qr = null;
+  }
+  if(qr2){
+    qr2.stop().then(()=>qr2.clear()).catch(()=>{});
+    qr2 = null;
+  }
+}
+
+function showMain(){
+  stopAllScanner();
+  mainApp.classList.remove("hidden");
+  printApp.classList.add("hidden");
+  toggleMenu();
+}
+
+function showPrint(){
+  stopAllScanner();
+  mainApp.classList.add("hidden");
+  printApp.classList.remove("hidden");
+  toggleMenu();
+}
+
 function changeInputMode(){
   const mode = document.getElementById("inputMode").value;
   const nsxBlock = document.getElementById("nsxBlock");
@@ -205,30 +228,46 @@ const scanConfigAndroidWeak = { fps: 10, qrbox: 250 };
 let qr=null,qr2=null,currentFilter="all";
 
 /* ================= SCAN MAIN ================= */
-function startScan(){
+  async function startScan(){
+
   if(isIOS()){
     alert("⚠️ iPhone không hỗ trợ quét barcode ổn định.\nVui lòng nhập tay barcode.");
     return;
   }
 
-  const r=document.getElementById("reader");
-  r.innerHTML='<div class="scan-frame"><div class="scan-line"></div></div>';
-  r.classList.remove("hidden");
+  // 👉 STOP camera cũ nếu còn
+  if(qr){
+    try{
+      await qr.stop();
+      await qr.clear();
+    }catch(e){}
+    qr = null;
+  }
 
-  if(!qr) qr=new Html5Qrcode("reader");
+  const r = document.getElementById("reader");
+  r.classList.remove("hidden");
+  r.innerHTML = `
+    <div class="scan-frame">
+      <div class="scan-line"></div>
+    </div>
+  `;
+
+  qr = new Html5Qrcode("reader");
 
   qr.start(
-    { facingMode:{ ideal:"environment" } },
+    { facingMode: "environment" },
     scanConfigAndroidWeak,
-    code=>{
-      barcode.value=code;
-      qr.stop().then(()=>qr.clear());
-      r.classList.add("hidden");
+    (code) => {
+      document.getElementById("barcode").value = code;
+
+      qr.stop().then(() => {
+        qr.clear();
+        r.classList.add("hidden");
+      });
     },
-    err=>{}
+    () => {}
   );
 }
-
 /* ================= SCAN PRINT ================= */
 function startPrintScan(){
 
