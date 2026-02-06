@@ -109,9 +109,16 @@ body{background:#f3f4f6}
 
 <div id="reader" class="hidden"></div>
 
-<label class="font-semibold">Ngày sản xuất (NSX)</label>
-<input type="date" id="nsx" class="border p-2 rounded w-full">
-
+<div id="nsxWrap">
+  <label class="font-semibold">Ngày sản xuất (NSX)</label>
+  <input type="date" id="nsx" class="border p-2 rounded w-full">
+</div>
+  
+<label class="flex items-center gap-2 text-sm">
+  <input type="checkbox" id="onlyHSD" onchange="toggleNSX()">
+  Sản phẩm chỉ có HSD (không hiển thị NSX)
+</label>
+  
 <label class="font-semibold">Hạn sử dụng (HSD)</label>
 <input type="date" id="hsd" class="border p-2 rounded w-full">
 
@@ -381,6 +388,18 @@ function closePopup(){
  alertPopup.classList.add("hidden");
  alertPopup.classList.remove("flex");
 }
+  function toggleNSX(){
+  const wrap = document.getElementById("nsxWrap");
+  const nsxInput = document.getElementById("nsx");
+
+  if(document.getElementById("onlyHSD").checked){
+    wrap.classList.add("hidden");
+    nsxInput.value = ""; // chỉ reset giao diện, logic không đổi
+  }else{
+    wrap.classList.remove("hidden");
+  }
+}
+
 </script>
 
 </body>
