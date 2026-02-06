@@ -341,7 +341,9 @@ const hsdD = new Date(hsdVal);
 
 function saveHistory(f30,f20){
  let h=JSON.parse(localStorage.getItem(historyKey)||"[]");
- h.unshift({Barcode:barcode.value,NSX: document.getElementById("onlyHSD").checked ? "(NSX ngầm)" : nsx.value,HSD:hsd.value,"Cảnh báo 30%":f30,"Cảnh báo 20%":f20,"Thời gian":new Date().toLocaleString("vi-VN")});
+ h.unshift({Barcode:barcode.value,NSX: document.getElementById("onlyHSD").checked
+  ? `NSX tính từ HSD - ${offsetDays.value} ngày`
+  : nsx.value,HSD:hsd.value,"Cảnh báo 30%":f30,"Cảnh báo 20%":f20,"Thời gian":new Date().toLocaleString("vi-VN")});
  localStorage.setItem(historyKey,JSON.stringify(h));
  renderHistory();
 }
