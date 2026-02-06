@@ -250,8 +250,39 @@ function startPrintScan(){
 }
 
 function calculate(){
-let nsxVal = nsx.value;
+let nsxVal = "";
 const hsdVal = hsd.value;
+
+// ===== VALIDATE HSD =====
+if(!hsdVal){
+  alert("Chưa nhập HSD");
+  return;
+}
+
+// ===== TRƯỜNG HỢP CHỈ CÓ HSD =====
+if(document.getElementById("onlyHSD").checked){
+  const offset = parseInt(offsetDays.value);
+
+  if(!offset || offset <= 0){
+    alert("Nhập số ngày trước HSD");
+    return;
+  }
+
+  const hsdDate = new Date(hsdVal);
+  hsdDate.setDate(hsdDate.getDate() - offset);
+  nsxVal = hsdDate.toISOString().split("T")[0];
+
+}else{
+  // ===== TRƯỜNG HỢP CÓ NSX =====
+  nsxVal = nsx.value;
+}
+
+// ===== VALIDATE CHUNG =====
+if(!nsxVal){
+  alert("Chưa xác định được NSX");
+  return;
+}
+
 
 if(!hsdVal){alert("Chưa nhập HSD");return}
 
@@ -261,6 +292,18 @@ if(document.getElementById("onlyHSD").checked){
   hsdDate.setDate(hsdDate.getDate() - NSX_OFFSET_DAYS);
   nsxVal = hsdDate.toISOString().split("T")[0];
 }
+<div id="offsetWrap" class="hidden">
+  <label class="font-semibold text-sm">
+    Số ngày trước HSD (để tính NSX)
+  </label>
+  <input
+    type="number"
+    id="offsetDays"
+    min="1"
+    class="border p-2 rounded w-full"
+    placeholder="Ví dụ: 180"
+  >
+</div>
 
 // ===== VALIDATE GIỮ NGUYÊN =====
 if(!nsxVal || !hsdVal){alert("Nhập đủ NSX & HSD");return}
@@ -406,15 +449,19 @@ function closePopup(){
 }
 function toggleNSX(){
   const wrap = document.getElementById("nsxWrap");
-  const nsxInput = document.getElementById("nsx");
+  const offsetWrap = document.getElementById("offsetWrap");
 
   if(document.getElementById("onlyHSD").checked){
-    wrap.classList.add("hidden");
-    nsxInput.value = ""; // xóa hiển thị
+    wrap.classList.add("hidden");        // ẩn NSX
+    offsetWrap.classList.remove("hidden"); // hiện ô nhập số ngày
+    nsx.value = "";
   }else{
-    wrap.classList.remove("hidden");
+    wrap.classList.remove("hidden");     // hiện NSX
+    offsetWrap.classList.add("hidden");  // ẩn ô số ngày
+    offsetDays.value = "";
   }
 }
+
 
 
 </script>
