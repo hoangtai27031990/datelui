@@ -264,12 +264,10 @@ function startPrintScan(){
     }
   );
 }
-
-function calculate(){
 function calculate(){
 
   const mode = document.getElementById("inputMode").value;
-  const hsdVal = hsd.value;
+  const hsdVal = document.getElementById("hsd").value;
   let nsxD;
 
   if(!hsdVal){
@@ -279,7 +277,7 @@ function calculate(){
 
   const hsdD = new Date(hsdVal);
 
-  // ===== TRƯỜNG HỢP CHỈ CÓ HSD =====
+  // ===== CHỈ CÓ HSD =====
   if(mode === "hsdOnly"){
     const days = Number(document.getElementById("beforeHsd").value);
     if(!days || days <= 0){
@@ -289,20 +287,21 @@ function calculate(){
     nsxD = new Date(hsdD.getTime() - days * 86400000);
   }
 
-  // ===== TRƯỜNG HỢP CÓ NSX =====
+  // ===== CÓ NSX & HSD =====
   else{
-    if(!nsx.value){
+    const nsxVal = document.getElementById("nsx").value;
+    if(!nsxVal){
       alert("Vui lòng nhập NSX");
       return;
     }
-    nsxD = new Date(nsx.value);
+    nsxD = new Date(nsxVal);
     if(hsdD <= nsxD){
       alert("HSD phải lớn hơn NSX");
       return;
     }
   }
 
-  // ===== LOGIC CŨ GIỮ NGUYÊN =====
+  // ===== LOGIC TÍNH CŨ =====
   const total = (hsdD - nsxD) / 86400000;
   const date30 = new Date(nsxD.getTime() + total * 0.7 * 86400000);
   const date20 = new Date(nsxD.getTime() + total * 0.8 * 86400000);
@@ -310,54 +309,33 @@ function calculate(){
 
   let warn30="",warn20="",b30="",b20="",f30="Bình thường",f20="Bình thường";
 
-  if(today >= date30){warn30="⚠️ <b>Báo cáo Quản lý giải tồn</b>";b30="blink30";f30="Giải tồn"}
-  if(today >= date20){warn20="⚠️ <b>Rút hàng khỏi quầy</b>";b20="blink20";f20="Rút hàng"}
+  if(today >= date30){
+    warn30="⚠️ <b>Báo cáo Quản lý giải tồn</b>";
+    b30="blink30";
+    f30="Giải tồn";
+  }
+  if(today >= date20){
+    warn20="⚠️ <b>Rút hàng khỏi quầy</b>";
+    b20="blink20";
+    f20="Rút hàng";
+  }
 
-  result.innerHTML=`
-  <div class="border p-3 mb-3 ${b30}">
-    <b>MỐC 30%</b><br>📅 ${date30.toLocaleDateString("vi-VN")}
-    <div>${warn30||"<span class='text-green-700'>Trong ngưỡng an toàn</span>"}</div>
-  </div>
+  document.getElementById("result").innerHTML=`
+    <div class="border p-3 mb-3 ${b30}">
+      <b>MỐC 30%</b><br>📅 ${date30.toLocaleDateString("vi-VN")}
+      <div>${warn30 || "<span class='text-green-700'>Trong ngưỡng an toàn</span>"}</div>
+    </div>
 
-  <div class="border p-3 ${b20}">
-    <b>MỐC 20%</b><br>📅 ${date20.toLocaleDateString("vi-VN")}
-    <div>${warn20||"<span class='text-green-700'>Trong ngưỡng an toàn</span>"}</div>
-  </div>`;
+    <div class="border p-3 ${b20}">
+      <b>MỐC 20%</b><br>📅 ${date20.toLocaleDateString("vi-VN")}
+      <div>${warn20 || "<span class='text-green-700'>Trong ngưỡng an toàn</span>"}</div>
+    </div>
+  `;
 
   saveHistory(f30,f20);
 
-  if(today>=date20) showPopup("20");
-  else if(today>=date30) showPopup("30");
-}
-
- const nsxD=new Date(nsxVal), hsdD=new Date(hsdVal);
- if(hsdD<=nsxD){alert("HSD phải lớn hơn NSX");return}
-
- const total=(hsdD-nsxD)/86400000;
- const date30=new Date(nsxD.getTime()+total*0.7*86400000);
- const date20=new Date(nsxD.getTime()+total*0.8*86400000);
- const today=new Date();
-
- let warn30="",warn20="",b30="",b20="",f30="Bình thường",f20="Bình thường";
-
- if(today>=date30){warn30="⚠️ <b>Báo cáo Quản lý giải tồn</b>";b30="blink30";f30="Giải tồn"}
- if(today>=date20){warn20="⚠️ <b>Rút hàng khỏi quầy</b>";b20="blink20";f20="Rút hàng"}
-
- result.innerHTML=`
-<div class="border p-3 mb-3 ${b30}">
-<b>MỐC 30%</b><br>📅 ${date30.toLocaleDateString("vi-VN")}
-<div>${warn30||"<span class='text-green-700'>Trong ngưỡng an toàn</span>"}</div>
-</div>
-
-<div class="border p-3 ${b20}">
-<b>MỐC 20%</b><br>📅 ${date20.toLocaleDateString("vi-VN")}
-<div>${warn20||"<span class='text-green-700'>Trong ngưỡng an toàn</span>"}</div>
-</div>`;
-
- saveHistory(f30,f20);
-
- if(today>=date20) showPopup("20");
- else if(today>=date30) showPopup("30");
+  if(today >= date20) showPopup("20");
+  else if(today >= date30) showPopup("30");
 }
 
 function saveHistory(f30,f20){
