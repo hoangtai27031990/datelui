@@ -14,6 +14,7 @@ body{background:#f3f4f6}
 .card{background:#fff;border-radius:14px;box-shadow:0 4px 16px rgba(0,0,0,.08)}
 .brand-bg{background:#c40018}
 .brand-text{color:#c40018}
+.hidden { display: none; }
 
 /* ===== BLINK ===== */
 .blink30{animation:blink30 .6s linear infinite;border:2px solid #fb923c}
@@ -21,50 +22,17 @@ body{background:#f3f4f6}
 .blink20{animation:blink20 .6s linear infinite;border:2px solid #ef4444}
 @keyframes blink20{0%{background:#fff1f2}50%{background:#fecaca}100%{background:#fff1f2}}
 
-#sidebar{position:fixed;top:0;left:0;width:260px;height:100%;background:#fff;box-shadow:4px 0 16px rgba(0,0,0,.15);transform:translateX(-100%);transition:.3s;z-index:1000}
-#sidebar.active{transform:translateX(0)}
-#overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);display:none;z-index:900}
-#overlay.active{display:block}
-
-.chat-box{height:420px;overflow:auto;background:#fafafa;border:1px solid #e5e7eb;border-radius:10px;padding:10px}
-.chat-item{background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:6px 10px;margin-bottom:6px;font-family:monospace}
-
-.filter-btn{padding:6px 12px;border-radius:6px;border:1px solid #ddd;background:#f5f5f5;cursor:pointer;font-size:13px}
-.filter-btn.active{background:#2563eb;color:white;border-color:#2563eb}
 
 /* ===== POPUP ===== */
 #alertPopup{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:2000}
 .popup-30{border:3px solid #fb923c}
 .popup-20{border:3px solid #ef4444}
 
-/* ===== SCAN OVERLAY ===== */
-#reader,#printReader{
-  position:relative;
-  width:100%;
-  height:260px;
-  background:#000;
-}
-.scan-frame{
-  position:absolute;
-  inset:10%;
-  border:2px solid rgba(255,255,255,.4);
-  z-index:10;
-}
-.scan-line{
-  position:absolute;
-  left:5%;
-  width:90%;
-  height:4px;
-  background:red;
-  box-shadow:0 0 12px red;
-  animation:scanMove 1.2s linear infinite;
-  z-index:20;
-}
-@keyframes scanMove{
-  0%{top:30%}
-  50%{top:50%}
-  100%{top:70%}
-}
+/* ===== SCAN ===== */
+#reader,#printReader{position:relative;width:100%;height:260px;background:#000}
+.scan-frame{position:absolute;inset:10%;border:2px solid rgba(255,255,255,.4)}
+.scan-line{position:absolute;left:5%;width:90%;height:4px;background:red;animation:scanMove 1.2s linear infinite}
+@keyframes scanMove{0%{top:30%}50%{top:50%}100%{top:70%}}
 </style>
 </head>
 
@@ -79,35 +47,16 @@ body{background:#f3f4f6}
   </div>
 </div>
 
-<!-- SIDEBAR -->
-<div id="sidebar">
-  <div class="p-4 border-b text-center">
-    <div class="font-bold brand-text">Saigon Co.op</div>
-  </div>
-  <div class="p-3 space-y-2">
-    <button onclick="showMain()" class="w-full text-left px-3 py-2 rounded bg-red-50">📦 Quản lý HSD</button>
-    <button onclick="showPrint()" class="w-full text-left px-3 py-2 rounded bg-slate-100">🖨 In bảng giá quầy</button>
-  </div>
-</div>
-<div id="overlay" onclick="toggleMenu()"></div>
-
 <!-- HEADER -->
 <div class="flex justify-between items-center mb-4 p-3 rounded-lg brand-bg text-white">
   <div class="font-bold text-lg">HỆ THỐNG QUẢN LÝ HSD</div>
-  <button onclick="toggleMenu()" class="text-2xl">☰</button>
 </div>
-
-<!-- ================= MAIN APP ================= -->
-<div id="mainApp">
 
 <div class="card p-4 space-y-3">
-<label class="font-semibold">Barcode sản phẩm</label>
-<div class="flex gap-2">
-<input id="barcode" class="border p-2 rounded w-full">
-<button onclick="startScan()" class="brand-bg text-white px-3 rounded">Quét</button>
-</div>
 
-<div id="reader" class="hidden"></div>
+<label class="font-semibold">Barcode sản phẩm</label>
+<input id="barcode" class="border p-2 rounded w-full">
+
 <label class="font-semibold">Hình thức nhập ngày</label>
 <select id="mode" class="border p-2 rounded w-full" onchange="toggleMode()">
   <option value="full">Có NSX & HSD</option>
@@ -118,6 +67,7 @@ body{background:#f3f4f6}
   <label class="font-semibold">Ngày sản xuất (NSX)</label>
   <input type="date" id="nsx" class="border p-2 rounded w-full">
 </div>
+
 <div id="offsetBox" class="hidden">
   <label class="font-semibold">NSX trước HSD (số ngày)</label>
   <input type="number" id="offsetDays" class="border p-2 rounded w-full" placeholder="Ví dụ: 180">
@@ -127,311 +77,104 @@ body{background:#f3f4f6}
 <input type="date" id="hsd" class="border p-2 rounded w-full">
 
 <div class="grid grid-cols-2 gap-2 pt-2">
-<button onclick="calculate()" class="brand-bg text-white py-2 rounded">TÍNH KẾT QUẢ</button>
-<button onclick="resetForm()" class="bg-gray-500 text-white py-2 rounded">TÍNH LẠI</button>
+  <button onclick="calculate()" class="brand-bg text-white py-2 rounded">TÍNH KẾT QUẢ</button>
+  <button onclick="resetForm()" class="bg-gray-500 text-white py-2 rounded">TÍNH LẠI</button>
 </div>
 
 <div id="result"></div>
-
-<div class="grid grid-cols-2 gap-2 pt-2">
-<button onclick="exportExcel()" class="bg-slate-700 text-white py-2 rounded">Xuất Excel</button>
-<button onclick="clearHistory()" class="bg-red-600 text-white py-2 rounded">Xóa lịch sử</button>
-</div>
-
-<div id="statistic" class="text-sm pt-2"></div>
-</div>
-
-<div class="card p-3 mt-4">
-<h2 class="font-bold brand-text mb-2">Lịch sử tính toán</h2>
-
-<div class="flex gap-2 mb-2">
-  <button onclick="setFilter('all')" id="f-all" class="filter-btn active">Tất cả</button>
-  <button onclick="setFilter('30')" id="f-30" class="filter-btn">Giải tồn (30%)</button>
-  <button onclick="setFilter('20')" id="f-20" class="filter-btn">Rút hàng (20%)</button>
-</div>
-
-<div id="history" class="text-sm space-y-1 max-h-64 overflow-auto"></div>
-</div>
-</div>
-
-<!-- ================= PRINT APP ================= -->
-<div id="printApp" class="hidden card p-4">
-<h2 class="font-bold brand-text mb-3">In bảng giá quầy</h2>
-
-<div class="flex gap-2 mb-2">
-<button onclick="startPrintScan()" class="brand-bg text-white px-3 py-2 rounded">📷 Quét barcode</button>
-<button onclick="exportText()" class="bg-slate-700 text-white px-3 py-2 rounded">⬇ Xuất TXT</button>
-<button onclick="clearPrintHistory()" class="bg-red-600 text-white px-3 py-2 rounded">🗑 Xóa</button>
-</div>
-
-<div id="printReader" class="hidden"></div>
-<div class="chat-box" id="printHistory"></div>
 </div>
 
 <script>
-  function isIOS(){
-  return /iPhone|iPad|iPod/i.test(navigator.userAgent);
-}
-/* ================= CORE ================= */
-const historyKey="coop_hsd_history";
-const printKey="coop_print_history";
-
-const sidebar=document.getElementById("sidebar");
-const overlay=document.getElementById("overlay");
-const mainApp=document.getElementById("mainApp");
-const printApp=document.getElementById("printApp");
-
-function toggleMenu(){sidebar.classList.toggle("active");overlay.classList.toggle("active")}
-function showMain(){mainApp.classList.remove("hidden");printApp.classList.add("hidden");toggleMenu()}
-function showPrint(){mainApp.classList.add("hidden");printApp.classList.remove("hidden");toggleMenu()}
-
-/* ================= SCAN CONFIG ================= */
-const scanConfigAndroidWeak = { fps: 10, qrbox: 250 };
-
-let qr=null,qr2=null,currentFilter="all";
-
-/* ================= SCAN MAIN ================= */
-function startScan(){
-  if(isIOS()){
-    alert("⚠️ iPhone không hỗ trợ quét barcode ổn định.\nVui lòng nhập tay barcode.");
-    return;
-  }
-
-  const r=document.getElementById("reader");
-  r.innerHTML='<div class="scan-frame"><div class="scan-line"></div></div>';
-  r.classList.remove("hidden");
-
-  if(!qr) qr=new Html5Qrcode("reader");
-
-  qr.start(
-    { facingMode:{ ideal:"environment" } },
-    scanConfigAndroidWeak,
-    code=>{
-      barcode.value=code;
-      qr.stop().then(()=>qr.clear());
-      r.classList.add("hidden");
-    },
-    err=>{}
-  );
+function resetForm(){
+  barcode.value="";
+  nsx.value="";
+  hsd.value="";
+  result.innerHTML="";
 }
 
-/* ================= SCAN PRINT ================= */
-function startPrintScan(){
-
-  if (isIOS()) {
-    alert(
-      "⚠️ THIẾT BỊ iOS KHÔNG HỖ TRỢ QUÉT BARCODE\n\n" +
-      "Vui lòng:\n" +
-      "• Dùng điện thoại Android\n" +
-      "• Hoặc nhập barcode thủ công"
-    );
-    return;
-  }
-
-  const r = document.getElementById("printReader");
-  r.innerHTML = `
-    <div class="scan-frame">
-      <div class="scan-line"></div>
-    </div>
-  `;
-  r.classList.remove("hidden");
-
-  if(!qr2) qr2 = new Html5Qrcode("printReader");
-
-  qr2.start(
-    { facingMode: "environment" },
-    scanConfigAndroidWeak,
-    (code) => {
-      addBarcode(code);
-      qr2.stop().then(() => {
-        qr2.clear();
-        r.classList.add("hidden");
-      });
-    }
-  );
+function toggleMode(){
+  const m=mode.value;
+  nsxBox.classList.toggle("hidden",m==="hsd-only");
+  offsetBox.classList.toggle("hidden",m!=="hsd-only");
+  if(m==="hsd-only") nsx.value="";
 }
 
+/* ===== CALCULATE GỐC – GIỮ NGUYÊN ===== */
 function calculate(){
- const nsxVal=nsx.value, hsdVal=hsd.value;
- if(!nsxVal||!hsdVal){alert("Nhập đủ NSX & HSD");return}
- const nsxD=new Date(nsxVal), hsdD=new Date(hsdVal);
- if(hsdD<=nsxD){alert("HSD phải lớn hơn NSX");return}
+  const nsxVal=nsx.value,hsdVal=hsd.value;
+  if(!nsxVal||!hsdVal){alert("Nhập đủ NSX & HSD");return}
+  const nsxD=new Date(nsxVal),hsdD=new Date(hsdVal);
+  if(hsdD<=nsxD){alert("HSD phải lớn hơn NSX");return}
 
- const total=(hsdD-nsxD)/86400000;
- const date30=new Date(nsxD.getTime()+total*0.7*86400000);
- const date20=new Date(nsxD.getTime()+total*0.8*86400000);
- const today=new Date();
+  const total=(hsdD-nsxD)/86400000;
+  const date30=new Date(nsxD.getTime()+total*0.7*86400000);
+  const date20=new Date(nsxD.getTime()+total*0.8*86400000);
+  const today=new Date();
+
+  let warn30="",warn20="",b30="",b20="";
+  if(today>=date30){warn30="Giải tồn";b30="blink30"}
+  if(today>=date20){warn20="Rút hàng";b20="blink20"}
+
+  result.innerHTML=`
+    <div class="border p-3 mb-2 ${b30}">
+      <b>MỐC 30%</b><br>${date30.toLocaleDateString("vi-VN")}<br>${warn30||"Bình thường"}
+    </div>
+    <div class="border p-3 ${b20}">
+      <b>MỐC 20%</b><br>${date20.toLocaleDateString("vi-VN")}<br>${warn20||"Bình thường"}
+    </div>`;
+
+  if(today>=date20)showPopup("20");
+  else if(today>=date30)showPopup("30");
+}
+
+/* ===== BỌC calculate – CHỈ BỔ SUNG NGHIỆP VỤ ===== */
+const __calculate_origin=calculate;
+calculate=function(){
+  if(mode.value==="hsd-only"){
+    const off=Number(offsetDays.value);
+    if(!off||off<=0){alert("Nhập số ngày NSX trước HSD");return}
+    if(!hsd.value){alert("Vui lòng nhập HSD");return}
+    const d=new Date(hsd.value);
+    d.setDate(d.getDate()-off);
+    nsx.value=d.toISOString().split("T")[0];
+  }
+  __calculate_origin();
+};
+
+function showPopup(type){
+  const popup=alertPopup,box=popupBox,title=popupTitle,msg=popupMsg;
+  box.className="bg-white p-5 rounded-xl w-[90%] max-w-sm text-center";
+  if(type==="30"){title.innerText="CẢNH BÁO 30%";msg.innerText="Báo cáo quản lý để giải tồn.";box.classList.add("popup-30")}
+  if(type==="20"){title.innerText="CẢNH BÁO 20%";msg.innerText="Rút hàng khỏi quầy.";box.classList.add("popup-20")}
+  popup.classList.remove("hidden");popup.classList.add("flex");
+}
+function closePopup(){alertPopup.classList.add("hidden");alertPopup.classList.remove("flex")}
+  function toggleMode(){
+  const m = document.getElementById("mode").value;
+  document.getElementById("nsxBox").classList.toggle("hidden", m === "hsd-only");
+  document.getElementById("offsetBox").classList.toggle("hidden", m !== "hsd-only");
+  if(m === "hsd-only") document.getElementById("nsx").value = "";
+}
+const __calculate_origin = calculate;
+
 calculate = function(){
-
-  // ===== XỬ LÝ NGHIỆP VỤ PHÁT SINH =====
-  if(document.getElementById("mode")?.value === "hsd-only"){
-
-    const offset = Number(document.getElementById("offsetDays").value);
-    if(!offset || offset <= 0){
+  if(document.getElementById("mode").value === "hsd-only"){
+    const off = Number(document.getElementById("offsetDays").value);
+    if(!off || off <= 0){
       alert("Nhập số ngày NSX trước HSD");
-      return; // DỪNG – KHÔNG CHẠY LOGIC GỐC
+      return;
     }
-
     const hsdVal = document.getElementById("hsd").value;
     if(!hsdVal){
       alert("Vui lòng nhập HSD");
       return;
     }
-
-    // TÍNH NSX = HSD – offset ngày
-    const hsdDate = new Date(hsdVal);
-    const nsxDate = new Date(hsdDate.getTime() - offset * 86400000);
-
-    // GÁN NGẦM NSX ĐỂ HÀM GỐC DÙNG
-    document.getElementById("nsx").value =
-      nsxDate.toISOString().split("T")[0];
+    const d = new Date(hsdVal);
+    d.setDate(d.getDate() - off);
+    document.getElementById("nsx").value = d.toISOString().split("T")[0];
   }
-
-  // ===== GỌI LẠI LOGIC GỐC (100%) =====
   __calculate_origin();
 };
- let warn30="",warn20="",b30="",b20="",f30="Bình thường",f20="Bình thường";
-
- if(today>=date30){warn30="⚠️ <b>Báo cáo Quản lý giải tồn</b>";b30="blink30";f30="Giải tồn"}
- if(today>=date20){warn20="⚠️ <b>Rút hàng khỏi quầy</b>";b20="blink20";f20="Rút hàng"}
-
- result.innerHTML=`
-<div class="border p-3 mb-3 ${b30}">
-<b>MỐC 30%</b><br>📅 ${date30.toLocaleDateString("vi-VN")}
-<div>${warn30||"<span class='text-green-700'>Trong ngưỡng an toàn</span>"}</div>
-</div>
-
-<div class="border p-3 ${b20}">
-<b>MỐC 20%</b><br>📅 ${date20.toLocaleDateString("vi-VN")}
-<div>${warn20||"<span class='text-green-700'>Trong ngưỡng an toàn</span>"}</div>
-</div>`;
-
- saveHistory(f30,f20);
-
- if(today>=date20) showPopup("20");
- else if(today>=date30) showPopup("30");
-}
-
-function saveHistory(f30,f20){
- let h=JSON.parse(localStorage.getItem(historyKey)||"[]");
- h.unshift({Barcode:barcode.value,NSX:nsx.value,HSD:hsd.value,"Cảnh báo 30%":f30,"Cảnh báo 20%":f20,"Thời gian":new Date().toLocaleString("vi-VN")});
- localStorage.setItem(historyKey,JSON.stringify(h));
- renderHistory();
-}
-
-function setFilter(type){
- currentFilter=type;
- document.querySelectorAll(".filter-btn").forEach(b=>b.classList.remove("active"));
- document.getElementById("f-"+type).classList.add("active");
- renderHistory();
-}
-
-function renderHistory(){
- let data=JSON.parse(localStorage.getItem(historyKey)||"[]");
- if(currentFilter==="30") data=data.filter(x=>x["Cảnh báo 30%"]==="Giải tồn");
- if(currentFilter==="20") data=data.filter(x=>x["Cảnh báo 20%"]==="Rút hàng");
-
- if(!data.length){
-  history.innerHTML="<div class='text-gray-400 italic'>Không có dữ liệu phù hợp</div>";
-  statistic.innerHTML="📦 Tổng: 0";
-  return;
- }
-
- history.innerHTML=data.map(x=>`
-<div class="border-b pb-1">
-<div><b>Barcode:</b> ${x.Barcode||"-"}</div>
-<div>30%: <span class="${x["Cảnh báo 30%"]==="Giải tồn"?"text-orange-600 font-semibold":"text-green-700"}">${x["Cảnh báo 30%"]}</span>
- | 20%: <span class="${x["Cảnh báo 20%"]==="Rút hàng"?"text-red-600 font-semibold":"text-green-700"}">${x["Cảnh báo 20%"]}</span></div>
-<div class="text-xs text-gray-500">⏱ ${x["Thời gian"]}</div>
-</div>`).join("");
-
- statistic.innerHTML=`📦 Tổng: <b>${data.length}</b>`;
-}
-
-function clearHistory(){localStorage.removeItem(historyKey);renderHistory()}
-
-function exportExcel(){
- const h=JSON.parse(localStorage.getItem(historyKey)||"[]");
- if(!h.length){alert("Không có dữ liệu");return}
-
- const ws=XLSX.utils.json_to_sheet(h);
- const wb=XLSX.utils.book_new();
- XLSX.utils.book_append_sheet(wb,ws,"HSD");
- XLSX.writeFile(wb,"saigoncoop_hsd.xlsx");
-
- localStorage.removeItem(historyKey);
- renderHistory();
- showPopup("export");
-}
-
-function resetForm(){barcode.value="";nsx.value="";hsd.value="";result.innerHTML=""}
-renderHistory();
-
-function addBarcode(code){
- let d=JSON.parse(localStorage.getItem(printKey)||"{}");
- d[code]=(d[code]||0)+1;
- localStorage.setItem(printKey,JSON.stringify(d));
- renderPrint();
-}
-
-function renderPrint(){
- const d=JSON.parse(localStorage.getItem(printKey)||"{}");
- printHistory.innerHTML=Object.entries(d).map(([b,q])=>`<div class="chat-item">${b},${q}</div>`).join("");
-}
-
-function clearPrintHistory(){localStorage.removeItem(printKey);renderPrint()}
-
-function exportText(){
- const d=JSON.parse(localStorage.getItem(printKey)||"{}");
- if(!Object.keys(d).length){alert("Không có dữ liệu");return}
-
- const txt=Object.entries(d).map(([b,q])=>`${b},${q}`).join("\n");
- const blob=new Blob([txt],{type:"text/plain;charset=utf-8"});
- const url=URL.createObjectURL(blob);
- const a=document.createElement("a");
- a.href=url;a.download="barcode_print.txt";
- document.body.appendChild(a);a.click();document.body.removeChild(a);
- URL.revokeObjectURL(url);
-
- localStorage.removeItem(printKey);
- renderPrint();
- showPopup("export");
-}
-
-function showPopup(type){
- const popup=document.getElementById("alertPopup");
- const box=document.getElementById("popupBox");
- const title=document.getElementById("popupTitle");
- const msg=document.getElementById("popupMsg");
-
- box.className="bg-white p-5 rounded-xl w-[90%] max-w-sm text-center";
-
- if(type==="30"){title.innerText="CẢNH BÁO MỐC 30%";msg.innerText="Báo cáo quản lý để thực hiện giải tồn.";box.classList.add("popup-30")}
- if(type==="20"){title.innerText="CẢNH BÁO MỐC 20%";msg.innerText="Rút hàng khỏi quầy ngay.";box.classList.add("popup-20")}
- if(type==="export"){title.innerText="✅ XUẤT FILE THÀNH CÔNG";msg.innerText="Dữ liệu đã được tải về và hệ thống đã sẵn sàng cho lần tiếp theo."}
-
- popup.classList.remove("hidden");
- popup.classList.add("flex");
-
- if(type==="export") setTimeout(closePopup,2500);
-}
-
-function closePopup(){
- alertPopup.classList.add("hidden");
- alertPopup.classList.remove("flex");
-}
-  .hidden { display: none; }
-function toggleMode(){
-  const m = document.getElementById("mode").value;
-
-  // Ẩn / hiện NSX
-  document.getElementById("nsxBox")
-    .classList.toggle("hidden", m === "hsd-only");
-
-  // Ẩn / hiện số ngày quy đổi
-  document.getElementById("offsetBox")
-    .classList.toggle("hidden", m !== "hsd-only");
-}
 
 </script>
 
