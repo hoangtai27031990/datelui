@@ -108,17 +108,22 @@ body{background:#f3f4f6}
 </div>
 
 <div id="reader" class="hidden"></div>
+<label class="font-semibold">Cách nhập hạn sử dụng</label>
+<select id="inputMode" class="border p-2 rounded w-full" onchange="changeInputMode()">
+  <option value="full">Có NSX & HSD</option>
+  <option value="hsdOnly">Chỉ có HSD</option>
+</select>
 
-<div id="nsxWrap">
+<div id="nsxBlock">
   <label class="font-semibold">Ngày sản xuất (NSX)</label>
   <input type="date" id="nsx" class="border p-2 rounded w-full">
 </div>
-  
-<label class="flex items-center gap-2 text-sm">
-  <input type="checkbox" id="onlyHSD" onchange="toggleNSX()">
-  Sản phẩm chỉ có HSD (không hiển thị NSX)
-</label>
-  
+<div id="beforeHsdBlock" class="hidden">
+  <label class="font-semibold">Số ngày trước HSD</label>
+  <input type="number" id="beforeHsd" class="border p-2 rounded w-full" placeholder="Ví dụ: 180">
+</div>
+
+
 <label class="font-semibold">Hạn sử dụng (HSD)</label>
 <input type="date" id="hsd" class="border p-2 rounded w-full">
 
@@ -180,8 +185,19 @@ const printApp=document.getElementById("printApp");
 function toggleMenu(){sidebar.classList.toggle("active");overlay.classList.toggle("active")}
 function showMain(){mainApp.classList.remove("hidden");printApp.classList.add("hidden");toggleMenu()}
 function showPrint(){mainApp.classList.add("hidden");printApp.classList.remove("hidden");toggleMenu()}
-// ===== CẤU HÌNH NSX NGẦM =====
-const NSX_OFFSET_DAYS = 180; // ví dụ: NSX = HSD - 180 ngày
+function changeInputMode(){
+  const mode = document.getElementById("inputMode").value;
+  const nsxBlock = document.getElementById("nsxBlock");
+  const beforeBlock = document.getElementById("beforeHsdBlock");
+
+  if(mode === "hsdOnly"){
+    nsxBlock.classList.add("hidden");
+    beforeBlock.classList.remove("hidden");
+  }else{
+    nsxBlock.classList.remove("hidden");
+    beforeBlock.classList.add("hidden");
+  }
+}
 
 /* ================= SCAN CONFIG ================= */
 const scanConfigAndroidWeak = { fps: 10, qrbox: 250 };
@@ -250,66 +266,71 @@ function startPrintScan(){
 }
 
 function calculate(){
-let nsxVal = "";
-const hsdVal = hsd.value;
+function calculate(){
 
-// ===== VALIDATE HSD =====
-if(!hsdVal){
-  alert("Chưa nhập HSD");
-  return;
-}
+  const mode = document.getElementById("inputMode").value;
+  const hsdVal = hsd.value;
+  let nsxD;
 
-// ===== TRƯỜNG HỢP CHỈ CÓ HSD =====
-if(document.getElementById("onlyHSD").checked){
-  const offset = parseInt(offsetDays.value);
-
-  if(!offset || offset <= 0){
-    alert("Nhập số ngày trước HSD");
+  if(!hsdVal){
+    alert("Vui lòng nhập HSD");
     return;
   }
 
-  const hsdDate = new Date(hsdVal);
-  hsdDate.setDate(hsdDate.getDate() - offset);
-  nsxVal = hsdDate.toISOString().split("T")[0];
+  const hsdD = new Date(hsdVal);
 
-}else{
+  // ===== TRƯỜNG HỢP CHỈ CÓ HSD =====
+  if(mode === "hsdOnly"){
+    const days = Number(document.getElementById("beforeHsd").value);
+    if(!days || days <= 0){
+      alert("Nhập số ngày trước HSD hợp lệ");
+      return;
+    }
+    nsxD = new Date(hsdD.getTime() - days * 86400000);
+  }
+
   // ===== TRƯỜNG HỢP CÓ NSX =====
-  nsxVal = nsx.value;
+  else{
+    if(!nsx.value){
+      alert("Vui lòng nhập NSX");
+      return;
+    }
+    nsxD = new Date(nsx.value);
+    if(hsdD <= nsxD){
+      alert("HSD phải lớn hơn NSX");
+      return;
+    }
+  }
+
+  // ===== LOGIC CŨ GIỮ NGUYÊN =====
+  const total = (hsdD - nsxD) / 86400000;
+  const date30 = new Date(nsxD.getTime() + total * 0.7 * 86400000);
+  const date20 = new Date(nsxD.getTime() + total * 0.8 * 86400000);
+  const today = new Date();
+
+  let warn30="",warn20="",b30="",b20="",f30="Bình thường",f20="Bình thường";
+
+  if(today >= date30){warn30="⚠️ <b>Báo cáo Quản lý giải tồn</b>";b30="blink30";f30="Giải tồn"}
+  if(today >= date20){warn20="⚠️ <b>Rút hàng khỏi quầy</b>";b20="blink20";f20="Rút hàng"}
+
+  result.innerHTML=`
+  <div class="border p-3 mb-3 ${b30}">
+    <b>MỐC 30%</b><br>📅 ${date30.toLocaleDateString("vi-VN")}
+    <div>${warn30||"<span class='text-green-700'>Trong ngưỡng an toàn</span>"}</div>
+  </div>
+
+  <div class="border p-3 ${b20}">
+    <b>MỐC 20%</b><br>📅 ${date20.toLocaleDateString("vi-VN")}
+    <div>${warn20||"<span class='text-green-700'>Trong ngưỡng an toàn</span>"}</div>
+  </div>`;
+
+  saveHistory(f30,f20);
+
+  if(today>=date20) showPopup("20");
+  else if(today>=date30) showPopup("30");
 }
 
-// ===== VALIDATE CHUNG =====
-if(!nsxVal){
-  alert("Chưa xác định được NSX");
-  return;
-}
-
-
-if(!hsdVal){alert("Chưa nhập HSD");return}
-
-// ===== NSX NGẦM =====
-if(document.getElementById("onlyHSD").checked){
-  const hsdDate = new Date(hsdVal);
-  hsdDate.setDate(hsdDate.getDate() - NSX_OFFSET_DAYS);
-  nsxVal = hsdDate.toISOString().split("T")[0];
-}
-<div id="offsetWrap" class="hidden">
-  <label class="font-semibold text-sm">
-    Số ngày trước HSD (để tính NSX)
-  </label>
-  <input
-    type="number"
-    id="offsetDays"
-    min="1"
-    class="border p-2 rounded w-full"
-    placeholder="Ví dụ: 180"
-  >
-</div>
-
-// ===== VALIDATE GIỮ NGUYÊN =====
-if(!nsxVal || !hsdVal){alert("Nhập đủ NSX & HSD");return}
-
-const nsxD = new Date(nsxVal);
-const hsdD = new Date(hsdVal);
+ const nsxD=new Date(nsxVal), hsdD=new Date(hsdVal);
  if(hsdD<=nsxD){alert("HSD phải lớn hơn NSX");return}
 
  const total=(hsdD-nsxD)/86400000;
@@ -341,9 +362,7 @@ const hsdD = new Date(hsdVal);
 
 function saveHistory(f30,f20){
  let h=JSON.parse(localStorage.getItem(historyKey)||"[]");
- h.unshift({Barcode:barcode.value,NSX: document.getElementById("onlyHSD").checked
-  ? `NSX tính từ HSD - ${offsetDays.value} ngày`
-  : nsx.value,HSD:hsd.value,"Cảnh báo 30%":f30,"Cảnh báo 20%":f20,"Thời gian":new Date().toLocaleString("vi-VN")});
+ h.unshift({Barcode:barcode.value,NSX: nsx.value || "(Tính ngầm từ HSD)",HSD:hsd.value,"Cảnh báo 30%":f30,"Cảnh báo 20%":f20,"Thời gian":new Date().toLocaleString("vi-VN")});
  localStorage.setItem(historyKey,JSON.stringify(h));
  renderHistory();
 }
@@ -449,23 +468,6 @@ function closePopup(){
  alertPopup.classList.add("hidden");
  alertPopup.classList.remove("flex");
 }
-function toggleNSX(){
-  const wrap = document.getElementById("nsxWrap");
-  const offsetWrap = document.getElementById("offsetWrap");
-
-  if(document.getElementById("onlyHSD").checked){
-    wrap.classList.add("hidden");        // ẩn NSX
-    offsetWrap.classList.remove("hidden"); // hiện ô nhập số ngày
-    nsx.value = "";
-  }else{
-    wrap.classList.remove("hidden");     // hiện NSX
-    offsetWrap.classList.add("hidden");  // ẩn ô số ngày
-    offsetDays.value = "";
-  }
-}
-
-
-
 </script>
 
 </body>
