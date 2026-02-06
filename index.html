@@ -180,6 +180,8 @@ const printApp=document.getElementById("printApp");
 function toggleMenu(){sidebar.classList.toggle("active");overlay.classList.toggle("active")}
 function showMain(){mainApp.classList.remove("hidden");printApp.classList.add("hidden");toggleMenu()}
 function showPrint(){mainApp.classList.add("hidden");printApp.classList.remove("hidden");toggleMenu()}
+// ===== CẤU HÌNH NSX NGẦM =====
+const NSX_OFFSET_DAYS = 180; // ví dụ: NSX = HSD - 180 ngày
 
 /* ================= SCAN CONFIG ================= */
 const scanConfigAndroidWeak = { fps: 10, qrbox: 250 };
@@ -248,9 +250,23 @@ function startPrintScan(){
 }
 
 function calculate(){
- const nsxVal=nsx.value, hsdVal=hsd.value;
- if(!nsxVal||!hsdVal){alert("Nhập đủ NSX & HSD");return}
- const nsxD=new Date(nsxVal), hsdD=new Date(hsdVal);
+let nsxVal = nsx.value;
+const hsdVal = hsd.value;
+
+if(!hsdVal){alert("Chưa nhập HSD");return}
+
+// ===== NSX NGẦM =====
+if(document.getElementById("onlyHSD").checked){
+  const hsdDate = new Date(hsdVal);
+  hsdDate.setDate(hsdDate.getDate() - NSX_OFFSET_DAYS);
+  nsxVal = hsdDate.toISOString().split("T")[0];
+}
+
+// ===== VALIDATE GIỮ NGUYÊN =====
+if(!nsxVal || !hsdVal){alert("Nhập đủ NSX & HSD");return}
+
+const nsxD = new Date(nsxVal);
+const hsdD = new Date(hsdVal);
  if(hsdD<=nsxD){alert("HSD phải lớn hơn NSX");return}
 
  const total=(hsdD-nsxD)/86400000;
@@ -282,7 +298,7 @@ function calculate(){
 
 function saveHistory(f30,f20){
  let h=JSON.parse(localStorage.getItem(historyKey)||"[]");
- h.unshift({Barcode:barcode.value,NSX:nsx.value,HSD:hsd.value,"Cảnh báo 30%":f30,"Cảnh báo 20%":f20,"Thời gian":new Date().toLocaleString("vi-VN")});
+ h.unshift({Barcode:barcode.value,NSX: document.getElementById("onlyHSD").checked ? "(NSX ngầm)" : nsx.value,HSD:hsd.value,"Cảnh báo 30%":f30,"Cảnh báo 20%":f20,"Thời gian":new Date().toLocaleString("vi-VN")});
  localStorage.setItem(historyKey,JSON.stringify(h));
  renderHistory();
 }
@@ -388,17 +404,18 @@ function closePopup(){
  alertPopup.classList.add("hidden");
  alertPopup.classList.remove("flex");
 }
-  function toggleNSX(){
+function toggleNSX(){
   const wrap = document.getElementById("nsxWrap");
   const nsxInput = document.getElementById("nsx");
 
   if(document.getElementById("onlyHSD").checked){
     wrap.classList.add("hidden");
-    nsxInput.value = ""; // chỉ reset giao diện, logic không đổi
+    nsxInput.value = ""; // xóa hiển thị
   }else{
     wrap.classList.remove("hidden");
   }
 }
+
 
 </script>
 
