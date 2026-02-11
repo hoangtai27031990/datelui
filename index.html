@@ -237,7 +237,6 @@ body{background:#f3f4f6}
 </div>
 
 <script>
-
 function isIOS(){
   return /iPhone|iPad|iPod/i.test(navigator.userAgent);
 }
@@ -246,11 +245,79 @@ function isIOS(){
 const historyKey="coop_hsd_history";
 const printKey="coop_print_history";
 
-let currentFilter="all";
-let qr=null,qr2=null;
+const sidebar=document.getElementById("sidebar");
+const overlay=document.getElementById("overlay");
+const mainApp=document.getElementById("mainApp");
+const printApp=document.getElementById("printApp");
+
+const barcode=document.getElementById("barcode");
+const nsx=document.getElementById("nsx");
+const hsd=document.getElementById("hsd");
+const result=document.getElementById("result");
+const historyDiv=document.getElementById("history");
+const statistic=document.getElementById("statistic");
+const calcMode=document.getElementById("calcMode");
+const nsxBlock=document.getElementById("nsxBlock");
+const hsdBlock=document.getElementById("hsdBlock");
+const beforeHsdBlock=document.getElementById("beforeHsdBlock");
+const nsxPeriodBlock=document.getElementById("nsxPeriodBlock");
+const beforeHsdValue=document.getElementById("beforeHsdValue");
+const beforeHsdUnit=document.getElementById("beforeHsdUnit");
+const periodValue=document.getElementById("periodValue");
+const periodUnit=document.getElementById("periodUnit");
+
+let qr=null,qr2=null,currentFilter="all";
 let isScanning=false;
 
-/* ================= DATE HELPER ================= */
+/* ================= MENU ================= */
+function toggleMenu(){
+  sidebar.classList.toggle("active");
+  overlay.classList.toggle("active");
+}
+
+function stopAllScanner(){
+  if(qr){ qr.stop().then(()=>qr.clear()).catch(()=>{}); qr=null; }
+  if(qr2){ qr2.stop().then(()=>qr2.clear()).catch(()=>{}); qr2=null; }
+  isScanning=false;
+}
+
+function showMain(){
+  stopAllScanner();
+  mainApp.classList.remove("hidden");
+  printApp.classList.add("hidden");
+  toggleMenu();
+}
+
+function showPrint(){
+  stopAllScanner();
+  mainApp.classList.add("hidden");
+  printApp.classList.remove("hidden");
+  toggleMenu();
+}
+
+/* ================= MODE ================= */
+function changeCalcMode(){
+  const m=calcMode.value;
+  nsxBlock.classList.add("hidden");
+  hsdBlock.classList.add("hidden");
+  beforeHsdBlock.classList.add("hidden");
+  nsxPeriodBlock.classList.add("hidden");
+
+  if(m==="full"){
+    nsxBlock.classList.remove("hidden");
+    hsdBlock.classList.remove("hidden");
+  }
+  if(m==="hsdBack"){
+    hsdBlock.classList.remove("hidden");
+    beforeHsdBlock.classList.remove("hidden");
+  }
+  if(m==="nsxPeriod"){
+    nsxBlock.classList.remove("hidden");
+    nsxPeriodBlock.classList.remove("hidden");
+  }
+}
+
+/* ================= DATE UTILS ================= */
 function addPeriod(date,value,unit){
   const d=new Date(date);
   if(unit==="day") d.setDate(d.getDate()+value);
@@ -265,12 +332,8 @@ function addPeriod(date,value,unit){
 
 /* ================= CALCULATE ================= */
 function calculate(){
-
-  const name=document.getElementById("productName").value.trim();
-  if(!name){ alert("Nhập tên sản phẩm"); return; }
-
-  const mode=calcMode.value;
   let nsxD,hsdD;
+  const mode=calcMode.value;
 
   if(mode==="full"){
     if(!nsx.value||!hsd.value){alert("Nhập đủ NSX & HSD");return;}
@@ -301,53 +364,67 @@ function calculate(){
   const date20=new Date(nsxD.getTime()+total*0.8*86400000);
   const today=new Date();
 
-  result.innerHTML=`
-  <div class="border p-3 mb-3">
-    <b>MỐC 30%</b><br>
-    📅 ${date30.toLocaleDateString("vi-VN")}
-  </div>
-  <div class="border p-3">
-    <b>MỐC 20%</b><br>
-    📅 ${date20.toLocaleDateString("vi-VN")}
-  </div>`;
+  const name=document.getElementById("productName").value.trim();
+  if(!name){alert("Nhập tên sản phẩm");return;}
 
-  saveHistory({
-    id:Date.now(),
-    name:name,
-    barcode:barcode.value,
-    nsx:nsxD,
-    hsd:hsdD,
-    date30:date30,
-    date20:date20
-  });
+  let warn30="",warn20="",b30="",b20="";
+
+  if(today>=date30){warn30="⚠️ Báo cáo giải tồn";b30="blink30";}
+  if(today>=date20){warn20="⚠️ Rút hàng";b20="blink20";}
+
+  result.innerHTML=`
+  <div class="border p-3 mb-3 ${b30}">
+  <b>MỐC 30%</b><br>${date30.toLocaleDateString("vi-VN")}
+  <div>${warn30||"<span class='text-green-700'>An toàn</span>"}</div></div>
+  <div class="border p-3 ${b20}">
+  <b>MỐC 20%</b><br>${date20.toLocaleDateString("vi-VN")}
+  <div>${warn20||"<span class='text-green-700'>An toàn</span>"}</div></div>`;
+
+  saveHistory({name,barcode:barcode.value,nsx:nsxD,hsd:hsdD,date30,date20});
+
+  if(today>=date20) showPopup("20");
+  else if(today>=date30) showPopup("30");
 
   document.getElementById("productName").value="";
 }
 
-/* ================= SAVE ================= */
+/* ================= HISTORY ================= */
 function saveHistory(obj){
   let h=JSON.parse(localStorage.getItem(historyKey)||"[]");
-  h.unshift(obj);
+  h.unshift({...obj,done:false,time:new Date().toLocaleString("vi-VN")});
   localStorage.setItem(historyKey,JSON.stringify(h));
   renderHistory();
-  checkAutoWarning();
 }
 
-/* ================= RENDER ================= */
+function setFilter(type){
+  currentFilter=type;
+  document.querySelectorAll(".filter-btn").forEach(b=>b.classList.remove("active"));
+  document.getElementById("f-"+type).classList.add("active");
+  renderHistory();
+}
+
 function renderHistory(){
   let data=JSON.parse(localStorage.getItem(historyKey)||"[]");
+  const today=new Date();
+
+  if(currentFilter==="30"){
+    data=data.filter(x=>today>=new Date(x.date30)&&today<new Date(x.date20));
+  }
+  if(currentFilter==="20"){
+    data=data.filter(x=>today>=new Date(x.date20));
+  }
 
   if(!data.length){
-    history.innerHTML="<div class='text-gray-400 italic'>Không có dữ liệu</div>";
+    historyDiv.innerHTML="<div class='text-gray-400 italic'>Không có dữ liệu</div>";
     statistic.innerHTML="📦 Tổng: 0";
     return;
   }
 
-  history.innerHTML=data.map(x=>`
-  <div class="border-b pb-2">
-    <div><b>${x.name}</b></div>
-    <div>📅 30%: ${new Date(x.date30).toLocaleDateString("vi-VN")}</div>
-    <div>📅 HSD: ${new Date(x.hsd).toLocaleDateString("vi-VN")}</div>
+  historyDiv.innerHTML=data.map(x=>`
+  <div class="border-b pb-1">
+  <div><b>${x.name}</b></div>
+  <div>Barcode: ${x.barcode||"-"}</div>
+  <div>⏱ ${x.time}</div>
   </div>`).join("");
 
   statistic.innerHTML=`📦 Tổng: <b>${data.length}</b>`;
@@ -355,84 +432,56 @@ function renderHistory(){
 
 /* ================= AUTO WARNING ================= */
 function checkAutoWarning(){
-
   let data=JSON.parse(localStorage.getItem(historyKey)||"[]");
   const today=new Date();
   let warningList=[];
 
   data=data.filter(item=>{
+    if(item.done) return false;
     const diff=(today-new Date(item.date30))/86400000;
-
-    if(diff>=-15 && diff<=10){
-      warningList.push(item);
-      return true;
-    }
-
-    if(diff>10){
-      return false;
-    }
-
+    if(diff>=-15&&diff<=10){warningList.push(item);return true;}
+    if(diff>10) return false;
     return true;
   });
 
   localStorage.setItem(historyKey,JSON.stringify(data));
-
-  if(warningList.length){
-    showMultiPopup(warningList);
-  }
-
+  if(warningList.length) showMultiPopup(warningList);
   renderHistory();
 }
 
-/* ================= MULTI POPUP ================= */
-function showMultiPopup(list){
-
+/* ================= POPUP ================= */
+function showPopup(type){
   const popup=document.getElementById("alertPopup");
   const box=document.getElementById("popupBox");
   const title=document.getElementById("popupTitle");
   const msg=document.getElementById("popupMsg");
 
-  box.className="bg-white p-5 rounded-xl w-[95%] max-w-md text-left popup-pulse-30";
+  box.className="bg-white p-5 rounded-xl w-[90%] max-w-sm text-center";
 
-  title.innerText="CẢNH BÁO MỐC 30%";
+  if(type==="30"){
+    title.innerText="CẢNH BÁO MỐC 30%";
+    msg.innerText="Báo cáo quản lý để giải tồn.";
+    box.classList.add("popup-pulse-30");
+  }
 
-  msg.innerHTML=list.map(x=>`
-    <div class="border-b py-2">
-      <div><b>${x.name}</b></div>
-      <div>📅 30%: ${new Date(x.date30).toLocaleDateString("vi-VN")}</div>
-      <div>📅 HSD: ${new Date(x.hsd).toLocaleDateString("vi-VN")}</div>
-      <button onclick="markDone(${x.id})"
-        class="mt-1 bg-green-600 text-white px-2 py-1 rounded text-sm">
-        Hoàn thành
-      </button>
-    </div>
-  `).join("");
+  if(type==="20"){
+    title.innerText="CẢNH BÁO MỐC 20%";
+    msg.innerText="Rút hàng khỏi quầy ngay.";
+    box.classList.add("popup-pulse-20");
+  }
 
   popup.classList.remove("hidden");
   popup.classList.add("flex");
 }
 
-/* ================= MARK DONE ================= */
-function markDone(id){
-  let data=JSON.parse(localStorage.getItem(historyKey)||"[]");
-  data=data.filter(x=>x.id!==id);
-  localStorage.setItem(historyKey,JSON.stringify(data));
-  closePopup();
-  renderHistory();
-}
-
-/* ================= POPUP ================= */
 function closePopup(){
   alertPopup.classList.add("hidden");
   alertPopup.classList.remove("flex");
 }
 
-/* ================= INIT ================= */
 renderHistory();
 checkAutoWarning();
-
 </script>
-
 
 </body>
 </html>
