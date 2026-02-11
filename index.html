@@ -721,18 +721,21 @@ if(today > after10){
   alertPopup.classList.add("flex");
 }
 
-function completeProduct(index){
+ffunction completeProduct(index){
 
- let data = JSON.parse(localStorage.getItem(historyKey) || "[]");
- data.splice(index,1);
- localStorage.setItem(historyKey, JSON.stringify(data));
+  let data = JSON.parse(localStorage.getItem(historyKey) || "[]");
+  data.splice(index,1);
+  localStorage.setItem(historyKey, JSON.stringify(data));
 
- closePopup();
+  closePopup();
+  renderHistory();
+}
+
 document.addEventListener("DOMContentLoaded", function(){
-    removeExpiredProducts();
-    renderHistory();
-    checkAutoWarning();
+  renderHistory();
+  checkAutoWarning();
 });
+
 
 </script>
 
