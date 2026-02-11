@@ -332,6 +332,7 @@ const scanConfigAndroidWeak = { fps: 10, qrbox: 250 };
 
 let qr=null,qr2=null,currentFilter="all";
 let isScanning = false;
+let isPopupShowing = false;
 
 /* ================= SCAN MAIN ================= */
 async function startScan(){
@@ -537,7 +538,6 @@ function saveHistory(nsxD, hsdD, date30, date20, f30, f20){
    localStorage.setItem(historyKey, JSON.stringify(history));
 
    renderHistory();
-   checkStoredProducts();
 }
 
 
@@ -749,6 +749,9 @@ if(isPopupShowing) return;
 
 function showCheckDatePopup(list){
 
+ if(isPopupShowing) return; 
+ isPopupShowing = true;
+
  const box = document.getElementById("checkDateBox");
  const container = document.getElementById("checkDateList");
 
@@ -757,7 +760,7 @@ function showCheckDatePopup(list){
    return;
  }
 
-container.innerHTML = list.map(item => {
+ container.innerHTML = list.map(item => {
 
    const m30 = new Date(item.M30).toLocaleDateString("vi-VN");
    const hsd = new Date(item.HSD).toLocaleDateString("vi-VN");
@@ -772,11 +775,12 @@ container.innerHTML = list.map(item => {
        HOÀN THÀNH
      </button>
    </div>`;
-}).join("");
+ }).join("");
 
  box.classList.remove("hidden");
  box.classList.add("flex");
 }
+
 
 
 function completeProduct(id){
@@ -798,8 +802,10 @@ function completeProduct(id){
 }
 
 function closeCheckDatePopup(){
-  document.getElementById("checkDateBox").classList.add("hidden");
-  document.getElementById("checkDateBox").classList.remove("flex");
+  const box = document.getElementById("checkDateBox");
+  box.classList.add("hidden");
+  box.classList.remove("flex");
+  isPopupShowing = false;
 }
 </script>
 
