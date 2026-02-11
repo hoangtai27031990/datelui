@@ -500,7 +500,7 @@ function saveHistory(f30,f20,date30,date20){
    TenSP: document.getElementById("productName").value,
    Barcode: barcode.value,
    NSX: nsx.value,
-   HSD: hsd.value,
+   HSD: hsdD.toISOString(),
    Date30: date30.toISOString(),
    Date20: date20.toISOString(),
    "Cảnh báo 30%": f30,
@@ -664,12 +664,11 @@ function checkAutoWarning(){
     before10.setDate(before10.getDate() - 10);
 
     const after10 = new Date(date30);
-    after10.setDate(after10.getDate() + 10);
+after10.setDate(after10.getDate() + 10);
 
-    // Nếu đã quá 30% + 10 ngày → tự xoá khỏi lịch sử
-    if(today > after10){
-      return;
-    }
+if(today > after10){
+    return false;
+}
 
     newData.push(item);
 
@@ -729,9 +728,11 @@ function completeProduct(index){
  localStorage.setItem(historyKey, JSON.stringify(data));
 
  closePopup();
-renderHistory();
-checkAutoWarning();
-}
+document.addEventListener("DOMContentLoaded", function(){
+    removeExpiredProducts();
+    renderHistory();
+    checkAutoWarning();
+});
 
 </script>
 
