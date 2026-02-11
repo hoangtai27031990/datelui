@@ -506,6 +506,9 @@ function saveHistory(f30,f20,date30,hsdD){
 
  let h = JSON.parse(localStorage.getItem(historyKey) || "[]");
 
+ // Xóa sản phẩm trùng barcode trước khi thêm mới
+ h = h.filter(x => x.Barcode !== (barcode.value || "-"));
+
  h.unshift({
    id: Date.now(),
    "Tên sản phẩm": productName.value || "-",
@@ -647,18 +650,24 @@ function resetForm(){
   periodValue.value="";
   result.innerHTML="";
 }
-  function checkStoredProducts(){
+ function checkStoredProducts(){
 
  let data = JSON.parse(localStorage.getItem(historyKey) || "[]");
  if(!data.length) return;
 
  const today = new Date();
+ today.setHours(0,0,0,0);
+
  let warningProducts = [];
 
  data = data.filter(item => {
 
    const m30 = new Date(item["Mốc 30%"]);
    const hsd = new Date(item["HSD"]);
+
+   // Chuẩn hóa giờ
+   m30.setHours(0,0,0,0);
+   hsd.setHours(0,0,0,0);
 
    const before15 = new Date(m30);
    before15.setDate(before15.getDate() - 15);
@@ -721,12 +730,14 @@ function completeProduct(id){
  document.getElementById("checkDatePopup").classList.add("hidden");
  document.getElementById("checkDatePopup").classList.remove("flex");
 
- checkStoredProducts();
- renderHistory();
+checkStoredProducts();
+renderHistory();
+
+const remaining = JSON.parse(localStorage.getItem(historyKey) || "[]");
+if(!remaining.length){
+  document.getElementById("checkDatePopup").classList.add("hidden");
+  document.getElementById("checkDatePopup").classList.remove("flex");
 }
-  window.addEventListener("load", function(){
-  checkStoredProducts();
-});
 
 </script>
 
