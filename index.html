@@ -834,20 +834,49 @@ inner.classList.add("checkdate-pulse");
 
 function completeProduct(id){
 
- let data = JSON.parse(localStorage.getItem(historyKey) || "[]");
+  let data = JSON.parse(localStorage.getItem(historyKey) || "[]");
 
- data = data.map(x => {
-   if(x.id === id){
-     x.completed = true;
-   }
-   return x;
- });
+  // đánh dấu hoàn thành
+  data = data.map(x => {
+    if(x.id === id){
+      x.completed = true;
+    }
+    return x;
+  });
 
- localStorage.setItem(historyKey, JSON.stringify(data));
+  localStorage.setItem(historyKey, JSON.stringify(data));
 
- renderHistory();
- checkStoredProducts(); // để tự kiểm tra lại
+  // Lọc lại danh sách còn cần kiểm
+  const today = new Date();
+  today.setHours(0,0,0,0);
 
+  let warningProducts = data.filter(item => {
+
+    if(item.completed === true) return false;
+
+    const m30 = new Date(item.M30);
+    if(!m30 || isNaN(m30)) return false;
+
+    m30.setHours(0,0,0,0);
+
+    const before15 = new Date(m30);
+    before15.setDate(before15.getDate() - 15);
+
+    const after10 = new Date(m30);
+    after10.setDate(after10.getDate() + 10);
+
+    return today >= before15 && today <= after10;
+  });
+
+  if(warningProducts.length){
+    // cập nhật lại popup ngay lập tức
+    showCheckDatePopup(warningProducts);
+  }else{
+    // nếu hết sản phẩm thì tự đóng popup
+    closeCheckDatePopup();
+  }
+
+  renderHistory();
 }
 
 function closeCheckDatePopup(){
