@@ -588,7 +588,30 @@ ${x.CanhBao20}
 }
 
 
-function clearHistory(){localStorage.removeItem(historyKey);renderHistory()}
+function clearHistory(){
+
+  const data = JSON.parse(localStorage.getItem(historyKey) || "[]");
+
+  if(!data.length){
+    alert("Không có dữ liệu để xóa");
+    return;
+  }
+
+  document.getElementById("confirmBox").classList.remove("hidden");
+  document.getElementById("confirmBox").classList.add("flex");
+}
+function confirmDeleteHistory(){
+
+  localStorage.removeItem(historyKey);
+  renderHistory();
+  closeConfirmPopup();
+}
+
+function closeConfirmPopup(){
+  const box = document.getElementById("confirmBox");
+  box.classList.add("hidden");
+  box.classList.remove("flex");
+}
 
 function exportExcel(){
  const h=JSON.parse(localStorage.getItem(historyKey)||"[]");
@@ -808,6 +831,31 @@ function closeCheckDatePopup(){
   isPopupShowing = false;
 }
 </script>
+<div id="confirmBox"
+     class="fixed inset-0 hidden items-center justify-center bg-black bg-opacity-50 z-[2200]">
+
+  <div class="bg-white p-5 rounded-xl w-[90%] max-w-sm text-center">
+    <div class="font-bold text-lg mb-3 text-red-600">
+      XÁC NHẬN XÓA LỊCH SỬ
+    </div>
+
+    <div class="mb-4 text-sm">
+      Thao tác này sẽ xóa toàn bộ dữ liệu và không thể khôi phục.
+    </div>
+
+    <div class="flex justify-center gap-3">
+      <button onclick="confirmDeleteHistory()"
+        class="bg-red-600 text-white px-4 py-2 rounded">
+        XÓA
+      </button>
+
+      <button onclick="closeConfirmPopup()"
+        class="bg-gray-500 text-white px-4 py-2 rounded">
+        HỦY
+      </button>
+    </div>
+  </div>
+</div>
 
 </body>
 </html>
