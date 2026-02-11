@@ -544,7 +544,19 @@ function renderHistory(){
  statistic.innerHTML=`📦 Tổng: <b>${data.length}</b>`;
 }
 
-function clearHistory(){localStorage.removeItem(historyKey);renderHistory()}
+function clearHistory(){
+
+  const isConfirm = confirm(
+    "Bạn có chắc chắn muốn xoá toàn bộ lịch sử tính HSD?\n\n" +
+    "Dữ liệu sẽ không thể khôi phục."
+  );
+
+  if(!isConfirm) return;
+
+  localStorage.removeItem(historyKey);
+  renderHistory();
+}
+
 
 function exportExcel(){
  const h=JSON.parse(localStorage.getItem(historyKey)||"[]");
