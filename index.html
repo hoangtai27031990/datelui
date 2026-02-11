@@ -459,7 +459,6 @@ if(hsdD <= nsxD){
   alert("HSD phải lớn hơn NSX"); return;
 }
 
- if(hsdD<=nsxD){alert("HSD phải lớn hơn NSX");return}
 
  const total=(hsdD-nsxD)/86400000;
  const date30=new Date(nsxD.getTime()+total*0.7*86400000);
@@ -488,6 +487,9 @@ saveHistory(
   date30.toLocaleDateString("en-CA"),
   date20.toLocaleDateString("en-CA")
 );
+
+}
+
 
 function saveHistory(f30,f20,date30,date20){
 
