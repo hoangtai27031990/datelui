@@ -665,11 +665,11 @@ function resetForm(){
   periodValue.value="";
   result.innerHTML="";
 }
- function checkStoredProducts(){
+function checkStoredProducts(){
 
  let data = JSON.parse(localStorage.getItem(historyKey) || "[]");
 
- if(!data.length){
+ if(!Array.isArray(data) || !data.length){
    closeCheckDatePopup();
    return;
  }
@@ -677,17 +677,23 @@ function resetForm(){
  const today = new Date();
  today.setHours(0,0,0,0);
 
+ function parseVNDate(dateStr){
+   if(!dateStr) return null;
+   if(dateStr.includes("-")) return new Date(dateStr);
+   const [d,m,y] = dateStr.split("/");
+   return new Date(`${y}-${m}-${d}`);
+ }
+
  let warningProducts = [];
 
  data.forEach(item => {
 
-   if(item.completed) return;
+   if(item.completed === true) return;
 
-   const m30 = new Date(item["Mốc 30%"]);
-   const hsd = new Date(item["HSD"]);
+   const m30 = parseVNDate(item["Mốc 30%"]);
+   if(!m30 || isNaN(m30)) return;
 
    m30.setHours(0,0,0,0);
-   hsd.setHours(0,0,0,0);
 
    const before15 = new Date(m30);
    before15.setDate(before15.getDate() - 15);
