@@ -701,63 +701,6 @@ function checkAutoWarning(){
    }
  }
 
- if(!warningList.length) return;
-
- let html = "<div class='text-left max-h-60 overflow-auto space-y-2'>";
-
- warningList.forEach((p,i)=>{
-   html += `
-     <div class="border-b pb-2">
-       <div><b>${i+1}. ${p.name}</b></div>
-       <div>HSD: ${p.hsd.toLocaleDateString("vi-VN")}</div>
-       <div class="text-orange-600 font-semibold">${p.note}</div>
-     </div>
-   `;
- });
-
- html += "</div>";
-
- document.getElementById("popupTitle").innerText =
-   "NHẮC KIỂM DATE (" + warningList.length + " sản phẩm)";
-
- document.getElementById("popupMsg").innerHTML = html;
-
- alertPopup.classList.remove("hidden");
- alertPopup.classList.add("flex");
-}
-
-
- if(!warningList.length) return;
-
- // ===== TẠO HTML DANH SÁCH =====
- let html = "<div class='text-left max-h-60 overflow-auto space-y-2'>";
-
- warningList.forEach((p,i)=>{
-   html += `
-     <div class="border-b pb-2">
-       <div><b>${i+1}. ${p.name}</b></div>
-       <div>HSD: ${p.hsd.toLocaleDateString("vi-VN")}</div>
-       <div class="text-orange-600 font-semibold">${p.note}</div>
-     </div>
-   `;
- });
-
- html += "</div>";
-
- // ===== HIỂN THỊ POPUP =====
- document.getElementById("popupTitle").innerText =
-   "NHẮC KIỂM DATE (" + warningList.length + " sản phẩm)";
-
- document.getElementById("popupMsg").innerHTML = html;
-
- document.getElementById("popupBox").className =
-   "bg-white p-5 rounded-xl w-[90%] max-w-sm text-center popup-pulse-30";
-
- alertPopup.classList.remove("hidden");
- alertPopup.classList.add("flex");
-}
-
-
 function closePopup(){
  alertPopup.classList.add("hidden");
  alertPopup.classList.remove("flex");
