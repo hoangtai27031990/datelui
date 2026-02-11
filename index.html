@@ -556,13 +556,12 @@ function exportExcel(){
  XLSX.writeFile(wb,"saigoncoop_hsd.xlsx");
 
  localStorage.removeItem(historyKey);
-removeExpiredProducts();
 renderHistory();
-checkAutoWarning();
 
 }
 
 function resetForm(){barcode.value="";nsx.value="";hsd.value="";result.innerHTML=""}
+removeExpiredProducts();
 renderHistory();
 checkAutoWarning();
 
@@ -636,7 +635,6 @@ function removeExpiredProducts(){
  const today = new Date();
  today.setHours(0,0,0,0);
 
- // Lọc giữ lại sản phẩm chưa hết hạn
  let filtered = data.filter(item => {
 
    if(!item.HSD) return false;
@@ -647,11 +645,11 @@ function removeExpiredProducts(){
    return hsdDate >= today;
  });
 
- // Nếu có thay đổi thì ghi lại localStorage
  if(filtered.length !== data.length){
    localStorage.setItem(historyKey, JSON.stringify(filtered));
  }
 }
+
 
 function checkAutoWarning(){
 
