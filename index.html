@@ -572,11 +572,16 @@ renderHistory();
 
 }
 
-function resetForm(){barcode.value="";nsx.value="";hsd.value="";result.innerHTML=""}
-removeExpiredProducts();
-renderHistory();
-checkAutoWarning();
+function resetForm(){
+  barcode.value="";
+  nsx.value="";
+  hsd.value="";
+  beforeHsdValue.value="";
+  periodValue.value="";
+  result.innerHTML="";
+}
 
+  
 function addBarcode(code){
  let d=JSON.parse(localStorage.getItem(printKey)||"{}");
  d[code]=(d[code]||0)+1;
@@ -723,34 +728,6 @@ function checkAutoWarning(){
    "NHẮC KIỂM DATE (" + warningList.length + " sản phẩm)";
 
  document.getElementById("popupMsg").innerHTML = html;
-
- alertPopup.classList.remove("hidden");
- alertPopup.classList.add("flex");
-}
-
-
-
- let html = "<div class='text-left max-h-60 overflow-auto space-y-2'>";
-
- warningList.forEach((p,i)=>{
-   html += `
-     <div class="border-b pb-2">
-       <div><b>${i+1}. ${p.name}</b></div>
-       <div>HSD: ${p.hsd.toLocaleDateString("vi-VN")}</div>
-       <div class="text-orange-600 font-semibold">${p.note}</div>
-     </div>
-   `;
- });
-
- html += "</div>";
-
- document.getElementById("popupTitle").innerText =
-   "NHẮC KIỂM DATE (" + warningList.length + " sản phẩm)";
-
- document.getElementById("popupMsg").innerHTML = html;
-
- const box = document.getElementById("popupBox");
- box.className = "bg-white p-5 rounded-xl w-[90%] max-w-sm text-center popup-pulse-30";
 
  alertPopup.classList.remove("hidden");
  alertPopup.classList.add("flex");
