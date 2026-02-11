@@ -485,8 +485,8 @@ if(hsdD <= nsxD){
 saveHistory(
   f30,
   f20,
-  date30.toISOString(),
-  date20.toISOString()
+  date30.toLocaleDateString("en-CA"),
+  date20.toLocaleDateString("en-CA")
 );
 
  if(today>=date20) showPopup("20");
@@ -675,36 +675,39 @@ function checkAutoWarning(){
 
  for(let item of data){
 
-  if(!item.HSD || !item.Date30) continue;
+   if(!item.HSD || !item.Date30) continue;
 
-const hsdDate = new Date(item.HSD + "T00:00:00");
-const date30 = new Date(item.Date30 + "T00:00:00");
+   const hsdDate = new Date(item.HSD + "T00:00:00");
+   const date30 = new Date(item.Date30 + "T00:00:00");
 
-const startWindow = new Date(date30);
-startWindow.setDate(startWindow.getDate() - 15);
+   const startWindow = new Date(date30);
+   startWindow.setDate(startWindow.getDate() - 15);
 
-const daysLeft = Math.ceil((hsdDate - today) / 86400000);
+   const daysLeft = Math.ceil((hsdDate - today) / 86400000);
 
-// ===== CẢNH BÁO 30% TRONG 15 NGÀY TRƯỚC MỐC =====
-const isIn30Window =
-  today >= startWindow && today <= date30;
+   const isIn30Window =
+     today >= startWindow && today <= date30;
 
-// ===== CẢNH BÁO CÒN ≤10 NGÀY =====
-const isNearExpire =
-  daysLeft <= 10 && daysLeft >= 0;
+   const isNearExpire =
+     daysLeft <= 10 && daysLeft >= 0;
 
-if(isIn30Window || isNearExpire){
+   if(isIn30Window || isNearExpire){
+     warningList.push({
+       name: item.TenSP || "-",
+       hsd: hsdDate,
+       note: isIn30Window
+         ? "Sắp đạt mốc 30% (" + date30.toLocaleDateString("vi-VN") + ")"
+         : "Còn " + daysLeft + " ngày tới HSD"
+     });
+   }
+ }
 
-  warningList.push({
-    name: item.TenSP || "-",
-    hsd: hsdDate,
-    note: isIn30Window
-      ? "Sắp đạt mốc 30% (" + date30.toLocaleDateString("vi-VN") + ")"
-      : "Còn " + daysLeft + " ngày tới HSD"
-  });
+ // ⚠ RETURN PHẢI Ở ĐÂY
+ if(!warningList.length) return;
+
+ ...
 }
 
- if(!warningList.length) return;
 
  let html = "<div class='text-left max-h-60 overflow-auto space-y-2'>";
 
