@@ -563,6 +563,7 @@ function exportExcel(){
 
 function resetForm(){barcode.value="";nsx.value="";hsd.value="";result.innerHTML=""}
 renderHistory();
+checkAutoWarning();
 
 function addBarcode(code){
  let d=JSON.parse(localStorage.getItem(printKey)||"{}");
