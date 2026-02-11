@@ -668,14 +668,20 @@ function resetForm(){
  function checkStoredProducts(){
 
  let data = JSON.parse(localStorage.getItem(historyKey) || "[]");
- if(!data.length) return;
+
+ if(!data.length){
+   closeCheckDatePopup();
+   return;
+ }
 
  const today = new Date();
  today.setHours(0,0,0,0);
 
  let warningProducts = [];
 
- data = data.filter(item => {
+ data.forEach(item => {
+
+   if(item.completed) return;
 
    const m30 = new Date(item["Mốc 30%"]);
    const hsd = new Date(item["HSD"]);
@@ -689,27 +695,19 @@ function resetForm(){
    const after10 = new Date(m30);
    after10.setDate(after10.getDate() + 10);
 
-   // Nếu quá 30% + 10 ngày => xóa khỏi lưu trữ
-   if(today > after10){
-     return false;
-   }
-
-   // Nếu trong vùng cảnh báo và chưa hoàn thành
-   if(today >= before15 && today <= after10 && !item.completed){
+   if(today >= before15 && today <= after10){
      warningProducts.push(item);
    }
 
-   return true;
  });
-
- localStorage.setItem(historyKey, JSON.stringify(data));
 
  if(warningProducts.length){
    showCheckDatePopup(warningProducts);
-} else {
+ } else {
    closeCheckDatePopup();
+ }
 }
-}
+
 
 function showCheckDatePopup(list){
 
