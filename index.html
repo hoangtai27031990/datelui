@@ -237,355 +237,154 @@ body{background:#f3f4f6}
 </div>
 
 <script>
-  function isIOS(){
+
+function isIOS(){
   return /iPhone|iPad|iPod/i.test(navigator.userAgent);
 }
+
 /* ================= CORE ================= */
 const historyKey="coop_hsd_history";
 const printKey="coop_print_history";
 
-const sidebar=document.getElementById("sidebar");
-const overlay=document.getElementById("overlay");
-const mainApp=document.getElementById("mainApp");
-const printApp=document.getElementById("printApp");
+let currentFilter="all";
+let qr=null,qr2=null;
+let isScanning=false;
 
-function toggleMenu(){sidebar.classList.toggle("active");overlay.classList.toggle("active")}
-function stopAllScanner(){
-  if(qr){
-    qr.stop().then(()=>qr.clear()).catch(()=>{});
-    qr = null;
+/* ================= DATE HELPER ================= */
+function addPeriod(date,value,unit){
+  const d=new Date(date);
+  if(unit==="day") d.setDate(d.getDate()+value);
+  if(unit==="month"){
+    const day=d.getDate();
+    d.setMonth(d.getMonth()+value);
+    if(d.getDate()<day) d.setDate(0);
   }
-  if(qr2){
-    qr2.stop().then(()=>qr2.clear()).catch(()=>{});
-    qr2 = null;
-  }
-  isScanning = false;
-}
-  
-function showMain(){
-  stopAllScanner();
-  mainApp.classList.remove("hidden");
-  printApp.classList.add("hidden");
-  toggleMenu();
-}
-
-function showPrint(){
-  stopAllScanner();
-  mainApp.classList.add("hidden");
-  printApp.classList.remove("hidden");
-  toggleMenu();
-}
-
-function changeCalcMode(){
-  const m = calcMode.value;
-
-  nsxBlock.classList.add("hidden");
-  hsdBlock.classList.add("hidden");
-  beforeHsdBlock.classList.add("hidden");
-  nsxPeriodBlock.classList.add("hidden");
-
-  if(m === "full"){
-    nsxBlock.classList.remove("hidden");
-    hsdBlock.classList.remove("hidden");
-  }
-
-  if(m === "hsdBack"){
-    hsdBlock.classList.remove("hidden");
-    beforeHsdBlock.classList.remove("hidden");
-  }
-
-  if(m === "nsxPeriod"){
-    nsxBlock.classList.remove("hidden");
-    nsxPeriodBlock.classList.remove("hidden");
-  }
-}
-
-/* ================= SCAN CONFIG ================= */
-const scanConfigAndroidWeak = { fps: 10, qrbox: 250 };
-
-let qr=null,qr2=null,currentFilter="all";
-let isScanning = false;
-
-/* ================= SCAN MAIN ================= */
-async function startScan(){
-
-  if(isIOS()){
-    alert("⚠️ iPhone không hỗ trợ quét barcode.\nVui lòng nhập tay.");
-    return;
-  }
-
-  if(isScanning) return;
-  isScanning = true;
-
-  // 🔴 DỪNG CAMERA CŨ (NẾU CÓ)
-  if(qr){
-    try{
-      await qr.stop();
-      await qr.clear();
-    }catch(e){}
-    qr = null;
-  }
-
-  const r = document.getElementById("reader");
-  r.innerHTML = `
-    <div class="scan-frame">
-      <div class="scan-line"></div>
-    </div>
-  `;
-  r.classList.remove("hidden");
-
-  qr = new Html5Qrcode("reader");
-
-  qr.start(
-    { facingMode: "environment" },
-    scanConfigAndroidWeak,
-    code => {
-      barcode.value = code;
-
-      qr.stop().then(()=>{
-        qr.clear();
-        qr = null;
-        r.classList.add("hidden");
-        isScanning = false;
-      });
-    },
-    () => {}
-  ).catch(()=>{
-    isScanning = false;
-    r.classList.add("hidden");
-  });
-}
-
-/* ================= SCAN PRINT ================= */
-async function startPrintScan(){
-
-  if(isIOS()){
-    alert("⚠️ Thiết bị iOS không hỗ trợ quét barcode.");
-    return;
-  }
-
-  if(isScanning) return;
-  isScanning = true;
-
-  if(qr2){
-    try{
-      await qr2.stop();
-      await qr2.clear();
-    }catch(e){}
-    qr2 = null;
-  }
-
-  const r = document.getElementById("printReader");
-  r.innerHTML = `
-    <div class="scan-frame">
-      <div class="scan-line"></div>
-    </div>
-  `;
-  r.classList.remove("hidden");
-
-  qr2 = new Html5Qrcode("printReader");
-
-  qr2.start(
-    { facingMode: "environment" },
-    scanConfigAndroidWeak,
-    code=>{
-      addBarcode(code);
-      qr2.stop().then(()=>{
-        qr2.clear();
-        qr2 = null;
-        r.classList.add("hidden");
-        isScanning = false;
-      });
-    }
-  ).catch(()=>{
-    isScanning = false;
-    r.classList.add("hidden");
-  });
-}
-
-function addPeriod(date, value, unit){
-  const d = new Date(date);
-
-  if(unit === "day") d.setDate(d.getDate() + value);
-
-  if(unit === "month"){
-    const day = d.getDate();
-    d.setMonth(d.getMonth() + value);
-    if(d.getDate() < day) d.setDate(0);
-  }
-
-  if(unit === "year") d.setFullYear(d.getFullYear() + value);
-
+  if(unit==="year") d.setFullYear(d.getFullYear()+value);
   return d;
 }
 
+/* ================= CALCULATE ================= */
 function calculate(){
-let nsxD, hsdD;
-const mode = calcMode.value;
 
-if(mode === "full"){
-  if(!nsx.value || !hsd.value){
-    alert("Nhập đủ NSX & HSD"); return;
+  const name=document.getElementById("productName").value.trim();
+  if(!name){ alert("Nhập tên sản phẩm"); return; }
+
+  const mode=calcMode.value;
+  let nsxD,hsdD;
+
+  if(mode==="full"){
+    if(!nsx.value||!hsd.value){alert("Nhập đủ NSX & HSD");return;}
+    nsxD=new Date(nsx.value);
+    hsdD=new Date(hsd.value);
   }
-  nsxD = new Date(nsx.value);
-  hsdD = new Date(hsd.value);
-}
 
-if(mode === "hsdBack"){
-  if(!hsd.value){
-    alert("Nhập HSD"); return;
+  if(mode==="hsdBack"){
+    if(!hsd.value){alert("Nhập HSD");return;}
+    const v=Number(beforeHsdValue.value);
+    if(!v){alert("Nhập thời gian trước HSD");return;}
+    hsdD=new Date(hsd.value);
+    nsxD=addPeriod(hsdD,-v,beforeHsdUnit.value);
   }
-  const v = Number(beforeHsdValue.value);
-  const u = beforeHsdUnit.value;
-  if(!v){
-    alert("Nhập thời gian trước HSD"); return;
+
+  if(mode==="nsxPeriod"){
+    if(!nsx.value){alert("Nhập NSX");return;}
+    const v=Number(periodValue.value);
+    if(!v){alert("Nhập thời gian sử dụng");return;}
+    nsxD=new Date(nsx.value);
+    hsdD=addPeriod(nsxD,v,periodUnit.value);
   }
-  hsdD = new Date(hsd.value);
-  nsxD = addPeriod(hsdD, -v, u);
-}
 
-if(mode === "nsxPeriod"){
-  if(!nsx.value){
-    alert("Nhập NSX"); return;
-  }
-  const v = Number(periodValue.value);
-  const u = periodUnit.value;
-  if(!v){
-    alert("Nhập thời gian sử dụng"); return;
-  }
-  nsxD = new Date(nsx.value);
-  hsdD = addPeriod(nsxD, v, u);
-}
+  if(hsdD<=nsxD){alert("HSD phải lớn hơn NSX");return;}
 
-if(hsdD <= nsxD){
-  alert("HSD phải lớn hơn NSX"); return;
-}
+  const total=(hsdD-nsxD)/86400000;
+  const date30=new Date(nsxD.getTime()+total*0.7*86400000);
+  const date20=new Date(nsxD.getTime()+total*0.8*86400000);
+  const today=new Date();
 
- if(hsdD<=nsxD){alert("HSD phải lớn hơn NSX");return}
+  result.innerHTML=`
+  <div class="border p-3 mb-3">
+    <b>MỐC 30%</b><br>
+    📅 ${date30.toLocaleDateString("vi-VN")}
+  </div>
+  <div class="border p-3">
+    <b>MỐC 20%</b><br>
+    📅 ${date20.toLocaleDateString("vi-VN")}
+  </div>`;
 
- const total=(hsdD-nsxD)/86400000;
- const date30=new Date(nsxD.getTime()+total*0.7*86400000);
- const date20=new Date(nsxD.getTime()+total*0.8*86400000);
- const today=new Date();
-const name = document.getElementById("productName").value.trim();
-if(!name){
-  alert("Nhập tên sản phẩm");
-  return;
-}
-
- let warn30="",warn20="",b30="",b20="",f30="Bình thường",f20="Bình thường";
-
- if(today>=date30){warn30="⚠️ <b>Báo cáo Quản lý giải tồn</b>";b30="blink30";f30="Giải tồn"}
- if(today>=date20){warn20="⚠️ <b>Rút hàng khỏi quầy</b>";b20="blink20";f20="Rút hàng"}
-
- result.innerHTML=`
-<div class="border p-3 mb-3 ${b30}">
-<b>MỐC 30%</b><br>📅 ${date30.toLocaleDateString("vi-VN")}
-<div>${warn30||"<span class='text-green-700'>Trong ngưỡng an toàn</span>"}</div>
-</div>
-
-<div class="border p-3 ${b20}">
-<b>MỐC 20%</b><br>📅 ${date20.toLocaleDateString("vi-VN")}
-<div>${warn20||"<span class='text-green-700'>Trong ngưỡng an toàn</span>"}</div>
-</div>`;
-
- saveHistory({
-  name:name,
-  barcode:barcode.value,
-  nsx:nsxD,
-  hsd:hsdD,
-  date30:date30,
-  date20:date20
-});
-
- if(today>=date20) showPopup("20");
- else if(today>=date30) showPopup("30");
-document.getElementById("productName").value="";
-}
-
-Thay bằng:
-
-function saveHistory(obj){
-  let h = JSON.parse(localStorage.getItem(historyKey) || "[]");
-
-  h.unshift({
-    name: obj.name,
-    barcode: obj.barcode,
-    nsx: obj.nsx,
-    hsd: obj.hsd,
-    date30: obj.date30,
-    date20: obj.date20,
-    done:false
+  saveHistory({
+    id:Date.now(),
+    name:name,
+    barcode:barcode.value,
+    nsx:nsxD,
+    hsd:hsdD,
+    date30:date30,
+    date20:date20
   });
 
-  localStorage.setItem(historyKey, JSON.stringify(h));
+  document.getElementById("productName").value="";
+}
+
+/* ================= SAVE ================= */
+function saveHistory(obj){
+  let h=JSON.parse(localStorage.getItem(historyKey)||"[]");
+  h.unshift(obj);
+  localStorage.setItem(historyKey,JSON.stringify(h));
   renderHistory();
+  checkAutoWarning();
 }
 
-function setFilter(type){
- currentFilter=type;
- document.querySelectorAll(".filter-btn").forEach(b=>b.classList.remove("active"));
- document.getElementById("f-"+type).classList.add("active");
- renderHistory();
-}
-
+/* ================= RENDER ================= */
 function renderHistory(){
- let data=JSON.parse(localStorage.getItem(historyKey)||"[]");
- if(currentFilter==="30") data=data.filter(x=>x["Cảnh báo 30%"]==="Giải tồn");
- if(currentFilter==="20") data=data.filter(x=>x["Cảnh báo 20%"]==="Rút hàng");
+  let data=JSON.parse(localStorage.getItem(historyKey)||"[]");
 
- if(!data.length){
-  history.innerHTML="<div class='text-gray-400 italic'>Không có dữ liệu phù hợp</div>";
-  statistic.innerHTML="📦 Tổng: 0";
-  return;
- }
+  if(!data.length){
+    history.innerHTML="<div class='text-gray-400 italic'>Không có dữ liệu</div>";
+    statistic.innerHTML="📦 Tổng: 0";
+    return;
+  }
 
- history.innerHTML=data.map(x=>`
-<div class="border-b pb-1">
-<div><b>Barcode:</b> ${x.Barcode||"-"}</div>
-<div>30%: <span class="${x["Cảnh báo 30%"]==="Giải tồn"?"text-orange-600 font-semibold":"text-green-700"}">${x["Cảnh báo 30%"]}</span>
- | 20%: <span class="${x["Cảnh báo 20%"]==="Rút hàng"?"text-red-600 font-semibold":"text-green-700"}">${x["Cảnh báo 20%"]}</span></div>
-<div class="text-xs text-gray-500">⏱ ${x["Thời gian"]}</div>
-</div>`).join("");
+  history.innerHTML=data.map(x=>`
+  <div class="border-b pb-2">
+    <div><b>${x.name}</b></div>
+    <div>📅 30%: ${new Date(x.date30).toLocaleDateString("vi-VN")}</div>
+    <div>📅 HSD: ${new Date(x.hsd).toLocaleDateString("vi-VN")}</div>
+  </div>`).join("");
 
- statistic.innerHTML=`📦 Tổng: <b>${data.length}</b>`;
+  statistic.innerHTML=`📦 Tổng: <b>${data.length}</b>`;
 }
+
+/* ================= AUTO WARNING ================= */
 function checkAutoWarning(){
 
-  let data = JSON.parse(localStorage.getItem(historyKey) || "[]");
-  const today = new Date();
+  let data=JSON.parse(localStorage.getItem(historyKey)||"[]");
+  const today=new Date();
+  let warningList=[];
 
-  let warningList = [];
+  data=data.filter(item=>{
+    const diff=(today-new Date(item.date30))/86400000;
 
-  data = data.filter(item=>{
-    if(item.done) return false;
-
-    const date30 = new Date(item.date30);
-    const diffDays = (today - date30) / 86400000;
-
-    // trong khoảng -15 đến +10 ngày quanh mốc 30%
-    if(diffDays >= -15 && diffDays <= 10){
+    if(diff>=-15 && diff<=10){
       warningList.push(item);
       return true;
     }
 
-    // quá 10 ngày sau mốc 30% thì tự xoá
-    if(diffDays > 10){
+    if(diff>10){
       return false;
     }
 
     return true;
   });
 
-  localStorage.setItem(historyKey, JSON.stringify(data));
+  localStorage.setItem(historyKey,JSON.stringify(data));
 
   if(warningList.length){
     showMultiPopup(warningList);
   }
 
   renderHistory();
-  checkAutoWarning();
 }
+
+/* ================= MULTI POPUP ================= */
 function showMultiPopup(list){
 
   const popup=document.getElementById("alertPopup");
@@ -595,14 +394,14 @@ function showMultiPopup(list){
 
   box.className="bg-white p-5 rounded-xl w-[95%] max-w-md text-left popup-pulse-30";
 
-  title.innerText = "CẢNH BÁO SẢN PHẨM 30%";
+  title.innerText="CẢNH BÁO MỐC 30%";
 
-  msg.innerHTML = list.map((x,i)=>`
+  msg.innerHTML=list.map(x=>`
     <div class="border-b py-2">
       <div><b>${x.name}</b></div>
-      <div>📅 Mốc 30%: ${new Date(x.date30).toLocaleDateString("vi-VN")}</div>
+      <div>📅 30%: ${new Date(x.date30).toLocaleDateString("vi-VN")}</div>
       <div>📅 HSD: ${new Date(x.hsd).toLocaleDateString("vi-VN")}</div>
-      <button onclick="markDone(${i})"
+      <button onclick="markDone(${x.id})"
         class="mt-1 bg-green-600 text-white px-2 py-1 rounded text-sm">
         Hoàn thành
       </button>
@@ -611,117 +410,29 @@ function showMultiPopup(list){
 
   popup.classList.remove("hidden");
   popup.classList.add("flex");
-
-  window.currentWarningList = list;
 }
-function markDone(index){
 
-  let data = JSON.parse(localStorage.getItem(historyKey) || "[]");
-  const target = window.currentWarningList[index];
-
-  data = data.filter(x=>!(x.name===target.name && x.date30===target.date30));
-
-  localStorage.setItem(historyKey, JSON.stringify(data));
-
+/* ================= MARK DONE ================= */
+function markDone(id){
+  let data=JSON.parse(localStorage.getItem(historyKey)||"[]");
+  data=data.filter(x=>x.id!==id);
+  localStorage.setItem(historyKey,JSON.stringify(data));
   closePopup();
   renderHistory();
 }
 
-function clearHistory(){localStorage.removeItem(historyKey);renderHistory()}
-
-function exportExcel(){
- const h=JSON.parse(localStorage.getItem(historyKey)||"[]");
- if(!h.length){alert("Không có dữ liệu");return}
-
- const ws=XLSX.utils.json_to_sheet(h);
- const wb=XLSX.utils.book_new();
- XLSX.utils.book_append_sheet(wb,ws,"HSD");
- XLSX.writeFile(wb,"saigoncoop_hsd.xlsx");
-
- localStorage.removeItem(historyKey);
- renderHistory();
- showPopup("export");
-}
-
-function resetForm(){barcode.value="";nsx.value="";hsd.value="";result.innerHTML=""}
-renderHistory();
-
-function addBarcode(code){
- let d=JSON.parse(localStorage.getItem(printKey)||"{}");
- d[code]=(d[code]||0)+1;
- localStorage.setItem(printKey,JSON.stringify(d));
- renderPrint();
-}
-
-function renderPrint(){
- const d=JSON.parse(localStorage.getItem(printKey)||"{}");
- printHistory.innerHTML=Object.entries(d).map(([b,q])=>`<div class="chat-item">${b},${q}</div>`).join("");
-}
-
-function clearPrintHistory(){localStorage.removeItem(printKey);renderPrint()}
-
-function exportText(){
- const d=JSON.parse(localStorage.getItem(printKey)||"{}");
- if(!Object.keys(d).length){alert("Không có dữ liệu");return}
-
- const txt=Object.entries(d).map(([b,q])=>`${b},${q}`).join("\n");
- const blob=new Blob([txt],{type:"text/plain;charset=utf-8"});
- const url=URL.createObjectURL(blob);
- const a=document.createElement("a");
- a.href=url;a.download="barcode_print.txt";
- document.body.appendChild(a);a.click();document.body.removeChild(a);
- URL.revokeObjectURL(url);
-
- localStorage.removeItem(printKey);
- renderPrint();
- showPopup("export");
-}
-
-function showPopup(type){
- const popup=document.getElementById("alertPopup");
- const box=document.getElementById("popupBox");
- const title=document.getElementById("popupTitle");
- const msg=document.getElementById("popupMsg");
-
- box.className="bg-white p-5 rounded-xl w-[90%] max-w-sm text-center";
-
- if(type === "30"){
-  title.innerText = "CẢNH BÁO MỐC 30%";
-  msg.innerText = "Báo cáo quản lý để thực hiện giải tồn.";
-  box.classList.add("popup-pulse-30");
-}
-
-if(type === "20"){
-  title.innerText = "CẢNH BÁO MỐC 20%";
-  msg.innerText = "Rút hàng khỏi quầy ngay.";
-  box.classList.add("popup-pulse-20");
-}
-
-if(type === "export"){
-  title.innerText = "✅ XUẤT FILE THÀNH CÔNG";
-  msg.innerText = "Dữ liệu đã được tải về và hệ thống đã sẵn sàng cho lần tiếp theo.";
-}
-
- popup.classList.remove("hidden");
- popup.classList.add("flex");
-
- if(type==="export") setTimeout(closePopup,2500);
-}
-
+/* ================= POPUP ================= */
 function closePopup(){
- alertPopup.classList.add("hidden");
- alertPopup.classList.remove("flex");
+  alertPopup.classList.add("hidden");
+  alertPopup.classList.remove("flex");
 }
-function resetForm(){
-  barcode.value="";
-  nsx.value="";
-  hsd.value="";
-  beforeHsdValue.value="";
-  periodValue.value="";
-  result.innerHTML="";
-}
+
+/* ================= INIT ================= */
+renderHistory();
+checkAutoWarning();
 
 </script>
+
 
 </body>
 </html>
