@@ -633,34 +633,63 @@ function checkAutoWarning(){
  if(!data.length) return;
 
  const today = new Date();
+ let warningList = [];
 
  for(let item of data){
 
    const date30 = new Date(item.Date30);
    const hsdDate = new Date(item.HSD);
+   const daysLeft = Math.ceil((hsdDate - today) / 86400000);
 
-   const daysLeft = (hsdDate - today) / 86400000;
+   // Điều kiện 1: đạt mốc 30%
+   if(today >= date30){
+     warningList.push({
+       name: item.TenSP || "-",
+       hsd: hsdDate,
+       note: "Đạt mốc 30%"
+     });
+   }
 
-   // Điều kiện popup khi mở web
-   if(today >= date30 || daysLeft <= 10){
-
-     document.getElementById("popupTitle").innerText =
-       "NHẮC KIỂM DATE";
-
-     document.getElementById("popupMsg").innerHTML =
-       "Sản phẩm: <b>" + (item.TenSP || "-") + "</b><br>" +
-       "HSD: " + hsdDate.toLocaleDateString("vi-VN");
-
-     document.getElementById("popupBox").className =
-       "bg-white p-5 rounded-xl w-[90%] max-w-sm text-center popup-pulse-30";
-
-     alertPopup.classList.remove("hidden");
-     alertPopup.classList.add("flex");
-
-     break; // chỉ hiện 1 sản phẩm mỗi lần mở
+   // Điều kiện 2: còn <=10 ngày
+   else if(daysLeft <= 10){
+     warningList.push({
+       name: item.TenSP || "-",
+       hsd: hsdDate,
+       note: "Còn " + daysLeft + " ngày"
+     });
    }
  }
+
+ if(!warningList.length) return;
+
+ // ===== TẠO HTML DANH SÁCH =====
+ let html = "<div class='text-left max-h-60 overflow-auto space-y-2'>";
+
+ warningList.forEach((p,i)=>{
+   html += `
+     <div class="border-b pb-2">
+       <div><b>${i+1}. ${p.name}</b></div>
+       <div>HSD: ${p.hsd.toLocaleDateString("vi-VN")}</div>
+       <div class="text-orange-600 font-semibold">${p.note}</div>
+     </div>
+   `;
+ });
+
+ html += "</div>";
+
+ // ===== HIỂN THỊ POPUP =====
+ document.getElementById("popupTitle").innerText =
+   "NHẮC KIỂM DATE (" + warningList.length + " sản phẩm)";
+
+ document.getElementById("popupMsg").innerHTML = html;
+
+ document.getElementById("popupBox").className =
+   "bg-white p-5 rounded-xl w-[90%] max-w-sm text-center popup-pulse-30";
+
+ alertPopup.classList.remove("hidden");
+ alertPopup.classList.add("flex");
 }
+
 
 function closePopup(){
  alertPopup.classList.add("hidden");
