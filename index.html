@@ -573,6 +573,8 @@ function exportExcel(){
 
 
 renderHistory();
+renderPrint();
+checkStoredProducts();
 
 function addBarcode(code){
  let d=JSON.parse(localStorage.getItem(printKey)||"{}");
