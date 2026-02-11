@@ -496,13 +496,13 @@ if(hsdD <= nsxD){
 <div>${warn20||"<span class='text-green-700'>Trong ngưỡng an toàn</span>"}</div>
 </div>`;
 
- saveHistory(f30,f20,date30,hsdD);
+saveHistory(f30,f20,date30,hsdD,nsxD);
 
  if(today>=date20) showPopup("20");
  else if(today>=date30) showPopup("30");
 }
 
-function saveHistory(f30,f20,date30,hsdD){
+function saveHistory(f30,f20,date30,hsdD,nsxD){
 
  let h = JSON.parse(localStorage.getItem(historyKey) || "[]");
 
@@ -513,7 +513,7 @@ function saveHistory(f30,f20,date30,hsdD){
    id: Date.now(),
    "Tên sản phẩm": productName.value || "-",
    Barcode: barcode.value || "-",
-   NSX: nsx.value || "-",
+   NSX: nsxD.toISOString(),
    HSD: hsdD.toISOString(),
    "Mốc 30%": date30.toISOString(),
    "Cảnh báo 30%": f30,
@@ -730,8 +730,8 @@ function completeProduct(id){
  document.getElementById("checkDatePopup").classList.add("hidden");
  document.getElementById("checkDatePopup").classList.remove("flex");
 
-checkStoredProducts();
 renderHistory();
+checkStoredProducts();
 
 const remaining = JSON.parse(localStorage.getItem(historyKey) || "[]");
 if(!remaining.length){
