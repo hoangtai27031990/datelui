@@ -673,7 +673,6 @@ function resetForm(){
    const m30 = new Date(item["Mốc 30%"]);
    const hsd = new Date(item["HSD"]);
 
-   // Chuẩn hóa giờ
    m30.setHours(0,0,0,0);
    hsd.setHours(0,0,0,0);
 
@@ -688,8 +687,8 @@ function resetForm(){
      return false;
    }
 
-   // Nếu trong vùng cảnh báo
-   if(today >= before15 && today <= after10){
+   // Nếu trong vùng cảnh báo và chưa hoàn thành
+   if(today >= before15 && today <= after10 && !item.completed){
      warningProducts.push(item);
    }
 
@@ -700,6 +699,9 @@ function resetForm(){
 
  if(warningProducts.length){
    showCheckDatePopup(warningProducts);
+
+   document.getElementById("checkDateBox").classList.remove("hidden");
+   document.getElementById("checkDateBox").classList.add("flex");
  }
 }
 
@@ -723,34 +725,30 @@ function showCheckDatePopup(list){
      </button>
    </div>`;
  }).join("");
-
- document.getElementById("checkDatePopup").classList.remove("hidden");
- document.getElementById("checkDatePopup").classList.add("flex");
+  
 }
 
 function completeProduct(id){
 
  let data = JSON.parse(localStorage.getItem(historyKey) || "[]");
- data = data.filter(x => x.id !== id);
+
+ data = data.map(x => {
+   if(x.id === id){
+     x.completed = true;   // Đánh dấu đã xử lý
+   }
+   return x;
+ });
 
  localStorage.setItem(historyKey, JSON.stringify(data));
 
- document.getElementById("checkDatePopup").classList.add("hidden");
- document.getElementById("checkDatePopup").classList.remove("flex");
+ document.getElementById("checkDateBox").classList.add("hidden");
+ document.getElementById("checkDateBox").classList.remove("flex");
 
-renderHistory();
-checkStoredProducts();
-
-const remaining = JSON.parse(localStorage.getItem(historyKey) || "[]");
-if(!remaining.length){
-  document.getElementById("checkDatePopup").classList.add("hidden");
-  document.getElementById("checkDatePopup").classList.remove("flex");
+ renderHistory();
 }
 function closeCheckDatePopup(){
-  document.getElementById("checkDatePopup").classList.add("hidden");
-  document.getElementById("checkDatePopup").classList.remove("flex");
-}
-
+  document.getElementById("checkDateBox").classList.add("hidden");
+  document.getElementById("checkDateBox").classList.remove("flex");
 }
 </script>
 
