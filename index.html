@@ -669,32 +669,63 @@ function checkAutoWarning(){
  if(!data.length) return;
 
  const today = new Date();
+ today.setHours(0,0,0,0);
+
  let warningList = [];
 
  for(let item of data){
 
-   const date30 = new Date(item.Date30);
+   if(!item.HSD || !item.Date30) continue;
+
    const hsdDate = new Date(item.HSD);
+   const date30 = new Date(item.Date30);
+
+   hsdDate.setHours(0,0,0,0);
+   date30.setHours(0,0,0,0);
+
    const daysLeft = Math.ceil((hsdDate - today) / 86400000);
 
-   // Điều kiện 1: đạt mốc 30%
-   if(today >= date30){
-     warningList.push({
-       name: item.TenSP || "-",
-       hsd: hsdDate,
-       note: "Đạt mốc 30%"
-     });
-   }
+   // CHỈ cảnh báo nếu:
+   // 1. Đã tới mốc 30%
+   // HOẶC
+   // 2. Còn <=10 ngày
+   if(today >= date30 || daysLeft <= 10){
 
-   // Điều kiện 2: còn <=10 ngày
-   else if(daysLeft <= 10){
      warningList.push({
        name: item.TenSP || "-",
        hsd: hsdDate,
-       note: "Còn " + daysLeft + " ngày"
+       note: today >= date30
+         ? "Đạt mốc 30%"
+         : "Còn " + daysLeft + " ngày"
      });
    }
  }
+
+ if(!warningList.length) return;
+
+ let html = "<div class='text-left max-h-60 overflow-auto space-y-2'>";
+
+ warningList.forEach((p,i)=>{
+   html += `
+     <div class="border-b pb-2">
+       <div><b>${i+1}. ${p.name}</b></div>
+       <div>HSD: ${p.hsd.toLocaleDateString("vi-VN")}</div>
+       <div class="text-orange-600 font-semibold">${p.note}</div>
+     </div>
+   `;
+ });
+
+ html += "</div>";
+
+ document.getElementById("popupTitle").innerText =
+   "NHẮC KIỂM DATE (" + warningList.length + " sản phẩm)";
+
+ document.getElementById("popupMsg").innerHTML = html;
+
+ alertPopup.classList.remove("hidden");
+ alertPopup.classList.add("flex");
+}
+
 
  if(!warningList.length) return;
 
