@@ -141,9 +141,11 @@ body{background:#f3f4f6}
 <div id="mainApp">
 
 <div class="card p-4 space-y-3">
-<label class="font-bold text-red-600">Tên sản phẩm (*)</label>
-<input id="productName" class="border-2 border-red-500 p-2 rounded w-full mb-2 focus:outline-none focus:ring-2 focus:ring-red-400">
 <label class="font-semibold">Barcode sản phẩm</label>
+  <label class="font-semibold text-red-600">Tên sản phẩm</label>
+<input id="productName" 
+       class="border-2 border-red-500 p-2 rounded w-full font-semibold text-red-600"
+       placeholder="Nhập tên sản phẩm">
 <div class="flex gap-2">
 <input id="barcode" class="border p-2 rounded w-full">
 <button onclick="startScan()" class="brand-bg text-white px-3 rounded">Quét</button>
@@ -463,12 +465,13 @@ if(hsdD <= nsxD){
 
  const total=(hsdD-nsxD)/86400000;
  const date30=new Date(nsxD.getTime()+total*0.7*86400000);
-const date20=new Date(nsxD.getTime()+total*0.8*86400000);
-
-date30.setHours(0,0,0,0);
-date20.setHours(0,0,0,0);
-
+ const date20=new Date(nsxD.getTime()+total*0.8*86400000);
  const today=new Date();
+const name = document.getElementById("productName").value.trim();
+if(!name){
+  alert("Nhập tên sản phẩm");
+  return;
+}
 
  let warn30="",warn20="",b30="",b20="",f30="Bình thường",f20="Bình thường";
 
@@ -486,32 +489,38 @@ date20.setHours(0,0,0,0);
 <div>${warn20||"<span class='text-green-700'>Trong ngưỡng an toàn</span>"}</div>
 </div>`;
 
- saveHistory(f30,f20,date30,date20,hsdD);
+ saveHistory({
+  name:name,
+  barcode:barcode.value,
+  nsx:nsxD,
+  hsd:hsdD,
+  date30:date30,
+  date20:date20
+});
 
  if(today>=date20) showPopup("20");
  else if(today>=date30) showPopup("30");
+document.getElementById("productName").value="";
 }
 
-function saveHistory(f30,f20,date30,date20,hsdD){
+Thay bằng:
 
- let h=JSON.parse(localStorage.getItem(historyKey)||"[]");
+function saveHistory(obj){
+  let h = JSON.parse(localStorage.getItem(historyKey) || "[]");
 
- h.unshift({
-   TenSP: document.getElementById("productName").value,
-   Barcode: barcode.value,
-   NSX: nsx.value,
-  HSD: date20.toISOString(),
-   Date30: date30.toISOString(),
-   Date20: date20.toISOString(),
-   "Cảnh báo 30%": f30,
-   "Cảnh báo 20%": f20,
-   "Thời gian": new Date().toLocaleString("vi-VN")
- });
+  h.unshift({
+    name: obj.name,
+    barcode: obj.barcode,
+    nsx: obj.nsx,
+    hsd: obj.hsd,
+    date30: obj.date30,
+    date20: obj.date20,
+    done:false
+  });
 
- localStorage.setItem(historyKey,JSON.stringify(h));
- renderHistory();
+  localStorage.setItem(historyKey, JSON.stringify(h));
+  renderHistory();
 }
-
 
 function setFilter(type){
  currentFilter=type;
@@ -533,7 +542,6 @@ function renderHistory(){
 
  history.innerHTML=data.map(x=>`
 <div class="border-b pb-1">
-<div><b>${x.TenSP || "-"}</b></div>
 <div><b>Barcode:</b> ${x.Barcode||"-"}</div>
 <div>30%: <span class="${x["Cảnh báo 30%"]==="Giải tồn"?"text-orange-600 font-semibold":"text-green-700"}">${x["Cảnh báo 30%"]}</span>
  | 20%: <span class="${x["Cảnh báo 20%"]==="Rút hàng"?"text-red-600 font-semibold":"text-green-700"}">${x["Cảnh báo 20%"]}</span></div>
@@ -541,6 +549,82 @@ function renderHistory(){
 </div>`).join("");
 
  statistic.innerHTML=`📦 Tổng: <b>${data.length}</b>`;
+}
+function checkAutoWarning(){
+
+  let data = JSON.parse(localStorage.getItem(historyKey) || "[]");
+  const today = new Date();
+
+  let warningList = [];
+
+  data = data.filter(item=>{
+    if(item.done) return false;
+
+    const date30 = new Date(item.date30);
+    const diffDays = (today - date30) / 86400000;
+
+    // trong khoảng -15 đến +10 ngày quanh mốc 30%
+    if(diffDays >= -15 && diffDays <= 10){
+      warningList.push(item);
+      return true;
+    }
+
+    // quá 10 ngày sau mốc 30% thì tự xoá
+    if(diffDays > 10){
+      return false;
+    }
+
+    return true;
+  });
+
+  localStorage.setItem(historyKey, JSON.stringify(data));
+
+  if(warningList.length){
+    showMultiPopup(warningList);
+  }
+
+  renderHistory();
+  checkAutoWarning();
+}
+function showMultiPopup(list){
+
+  const popup=document.getElementById("alertPopup");
+  const box=document.getElementById("popupBox");
+  const title=document.getElementById("popupTitle");
+  const msg=document.getElementById("popupMsg");
+
+  box.className="bg-white p-5 rounded-xl w-[95%] max-w-md text-left popup-pulse-30";
+
+  title.innerText = "CẢNH BÁO SẢN PHẨM 30%";
+
+  msg.innerHTML = list.map((x,i)=>`
+    <div class="border-b py-2">
+      <div><b>${x.name}</b></div>
+      <div>📅 Mốc 30%: ${new Date(x.date30).toLocaleDateString("vi-VN")}</div>
+      <div>📅 HSD: ${new Date(x.hsd).toLocaleDateString("vi-VN")}</div>
+      <button onclick="markDone(${i})"
+        class="mt-1 bg-green-600 text-white px-2 py-1 rounded text-sm">
+        Hoàn thành
+      </button>
+    </div>
+  `).join("");
+
+  popup.classList.remove("hidden");
+  popup.classList.add("flex");
+
+  window.currentWarningList = list;
+}
+function markDone(index){
+
+  let data = JSON.parse(localStorage.getItem(historyKey) || "[]");
+  const target = window.currentWarningList[index];
+
+  data = data.filter(x=>!(x.name===target.name && x.date30===target.date30));
+
+  localStorage.setItem(historyKey, JSON.stringify(data));
+
+  closePopup();
+  renderHistory();
 }
 
 function clearHistory(){localStorage.removeItem(historyKey);renderHistory()}
@@ -555,10 +639,11 @@ function exportExcel(){
  XLSX.writeFile(wb,"saigoncoop_hsd.xlsx");
 
  localStorage.removeItem(historyKey);
-renderHistory();
+ renderHistory();
  showPopup("export");
 }
 
+function resetForm(){barcode.value="";nsx.value="";hsd.value="";result.innerHTML=""}
 renderHistory();
 
 function addBarcode(code){
@@ -635,107 +720,6 @@ function resetForm(){
   periodValue.value="";
   result.innerHTML="";
 }
-function checkAutoWarning(){
-
-  let data = JSON.parse(localStorage.getItem(historyKey) || "[]");
-  if(!data.length) return;
-
-  const today = new Date();
-  today.setHours(0,0,0,0);
-
-  let warningList = [];
-  let newData = [];
-
-  data.forEach((item,index)=>{
-
-    if(!item.date30 || !item.hsd){
-      newData.push(item);
-      return;
-    }
-
-    const date30 = new Date(item.date30);
-    date30.setHours(0,0,0,0);
-
-    const hsdDate = new Date(item.hsd);
-    hsdDate.setHours(0,0,0,0);
-
-    const before10 = new Date(date30);
-    before10.setDate(before10.getDate() - 10);
-    before10.setHours(0,0,0,0);
-
-    const after10 = new Date(date30);
-    after10.setDate(after10.getDate() + 10);
-    after10.setHours(0,0,0,0);
-
-    // Nếu quá 10 ngày sau mốc 30% → tự xoá
-    if(today > after10){
-        return;
-    }
-
-    newData.push(item);
-
-    if(today >= before10 && today <= after10){
-      warningList.push({
-        index: newData.length - 1,
-        name: item.tenSP || "-",
-        date30: date30,
-        hsd: hsdDate
-      });
-    }
-
-  });
-
-  localStorage.setItem(historyKey, JSON.stringify(newData));
-
-  if(!warningList.length) return;
-
-  let html = "<div class='text-left max-h-60 overflow-auto space-y-3'>";
-
-  warningList.forEach((p,i)=>{
-    html += `
-      <div class="border-b pb-2">
-        <div><b>${i+1}. ${p.name}</b></div>
-        <div>Mốc 30%: ${p.date30.toLocaleDateString("vi-VN")}</div>
-        <div>HSD: ${p.hsd.toLocaleDateString("vi-VN")}</div>
-        <button 
-          onclick="completeProduct(${p.index})"
-          class="mt-2 bg-green-600 text-white px-3 py-1 rounded text-sm">
-          Hoàn thành
-        </button>
-      </div>
-    `;
-  });
-
-  html += "</div>";
-
-  document.getElementById("popupTitle").innerText =
-    "CẢNH BÁO KIỂM SOÁT DATE (" + warningList.length + " SP)";
-
-  document.getElementById("popupMsg").innerHTML = html;
-
-  const popupBox = document.getElementById("popupBox");
-  popupBox.className =
-    "bg-white p-5 rounded-xl w-[90%] max-w-sm text-center popup-pulse-30";
-
-  const alertPopup = document.getElementById("alertPopup");
-  alertPopup.classList.remove("hidden");
-  alertPopup.classList.add("flex");
-}
-
-
-function completeProduct(index){
-
-  let data = JSON.parse(localStorage.getItem(historyKey) || "[]");
-  data.splice(index,1);
-  localStorage.setItem(historyKey, JSON.stringify(data));
-
-  closePopup();
-  renderHistory();
-}
-document.addEventListener("DOMContentLoaded", function(){
-  renderHistory();
-  checkAutoWarning();
-});
 
 </script>
 
