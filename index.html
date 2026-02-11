@@ -1,4 +1,5 @@
 
+
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -142,6 +143,8 @@ body{background:#f3f4f6}
 
 <div class="card p-4 space-y-3">
 <label class="font-semibold">Barcode sản phẩm</label>
+<label class="font-semibold">Tên sản phẩm</label>
+<input id="productName" class="border p-2 rounded w-full mb-2" placeholder="Nhập tên sản phẩm">
 <div class="flex gap-2">
 <input id="barcode" class="border p-2 rounded w-full">
 <button onclick="startScan()" class="brand-bg text-white px-3 rounded">Quét</button>
@@ -480,17 +483,36 @@ if(hsdD <= nsxD){
 <div>${warn20||"<span class='text-green-700'>Trong ngưỡng an toàn</span>"}</div>
 </div>`;
 
- saveHistory(f30,f20);
+saveHistory(
+  f30,
+  f20,
+  date30.toISOString(),
+  date20.toISOString()
+);
 
  if(today>=date20) showPopup("20");
  else if(today>=date30) showPopup("30");
 }
 
-function saveHistory(f30,f20){
- let h=JSON.parse(localStorage.getItem(historyKey)||"[]");
- h.unshift({Barcode:barcode.value,NSX:nsx.value,HSD:hsd.value,"Cảnh báo 30%":f30,"Cảnh báo 20%":f20,"Thời gian":new Date().toLocaleString("vi-VN")});
- localStorage.setItem(historyKey,JSON.stringify(h));
+function saveHistory(f30,f20,date30,date20){
+
+ let h = JSON.parse(localStorage.getItem(historyKey) || "[]");
+
+ h.unshift({
+   Barcode: barcode.value,
+   TenSP: productName.value,
+   NSX: nsx.value,
+   HSD: hsd.value,
+   Date30: date30,
+   Date20: date20,
+   "Cảnh báo 30%": f30,
+   "Cảnh báo 20%": f20,
+   "Thời gian": new Date().toLocaleString("vi-VN")
+ });
+
+ localStorage.setItem(historyKey, JSON.stringify(h));
  renderHistory();
+  checkAutoWarning();
 }
 
 function setFilter(type){
@@ -513,6 +535,7 @@ function renderHistory(){
 
  history.innerHTML=data.map(x=>`
 <div class="border-b pb-1">
+<div><b>Tên SP:</b> ${x.TenSP||"-"}</div>
 <div><b>Barcode:</b> ${x.Barcode||"-"}</div>
 <div>30%: <span class="${x["Cảnh báo 30%"]==="Giải tồn"?"text-orange-600 font-semibold":"text-green-700"}">${x["Cảnh báo 30%"]}</span>
  | 20%: <span class="${x["Cảnh báo 20%"]==="Rút hàng"?"text-red-600 font-semibold":"text-green-700"}">${x["Cảnh báo 20%"]}</span></div>
@@ -601,6 +624,41 @@ if(type === "export"){
  popup.classList.add("flex");
 
  if(type==="export") setTimeout(closePopup,2500);
+}
+
+function checkAutoWarning(){
+
+ let data = JSON.parse(localStorage.getItem(historyKey) || "[]");
+ if(!data.length) return;
+
+ const today = new Date();
+
+ for(let item of data){
+
+   const date30 = new Date(item.Date30);
+   const hsdDate = new Date(item.HSD);
+
+   const daysLeft = (hsdDate - today) / 86400000;
+
+   // Điều kiện popup khi mở web
+   if(today >= date30 || daysLeft <= 10){
+
+     document.getElementById("popupTitle").innerText =
+       "NHẮC KIỂM DATE";
+
+     document.getElementById("popupMsg").innerHTML =
+       "Sản phẩm: <b>" + (item.TenSP || "-") + "</b><br>" +
+       "HSD: " + hsdDate.toLocaleDateString("vi-VN");
+
+     document.getElementById("popupBox").className =
+       "bg-white p-5 rounded-xl w-[90%] max-w-sm text-center popup-pulse-30";
+
+     alertPopup.classList.remove("hidden");
+     alertPopup.classList.add("flex");
+
+     break; // chỉ hiện 1 sản phẩm mỗi lần mở
+   }
+ }
 }
 
 function closePopup(){
