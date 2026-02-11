@@ -675,29 +675,34 @@ function checkAutoWarning(){
 
  for(let item of data){
 
-   if(!item.HSD || !item.Date30) continue;
+  if(!item.HSD || !item.Date30) continue;
 
-   const hsdDate = new Date(item.HSD);
-   const date30 = new Date(item.Date30);
+const hsdDate = new Date(item.HSD + "T00:00:00");
+const date30 = new Date(item.Date30 + "T00:00:00");
 
-   hsdDate.setHours(0,0,0,0);
-   date30.setHours(0,0,0,0);
+const startWindow = new Date(date30);
+startWindow.setDate(startWindow.getDate() - 15);
 
-   const daysLeft = Math.ceil((hsdDate - today) / 86400000);
+const daysLeft = Math.ceil((hsdDate - today) / 86400000);
 
-   // CHỈ cảnh báo 30% hoặc còn <=10 ngày
-   if(today >= date30 || daysLeft <= 10){
+// ===== CẢNH BÁO 30% TRONG 15 NGÀY TRƯỚC MỐC =====
+const isIn30Window =
+  today >= startWindow && today <= date30;
 
-     warningList.push({
-       name: item.TenSP || "-",
-       hsd: hsdDate,
-       type: today >= date30 ? "30" : "10",
-       note: today >= date30
-         ? "Đạt mốc 30%"
-         : "Còn " + daysLeft + " ngày"
-     });
-   }
- }
+// ===== CẢNH BÁO CÒN ≤10 NGÀY =====
+const isNearExpire =
+  daysLeft <= 10 && daysLeft >= 0;
+
+if(isIn30Window || isNearExpire){
+
+  warningList.push({
+    name: item.TenSP || "-",
+    hsd: hsdDate,
+    note: isIn30Window
+      ? "Sắp đạt mốc 30% (" + date30.toLocaleDateString("vi-VN") + ")"
+      : "Còn " + daysLeft + " ngày tới HSD"
+  });
+}
 
  if(!warningList.length) return;
 
