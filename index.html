@@ -855,26 +855,26 @@ function completeProduct(id){
 
   let data = JSON.parse(localStorage.getItem(historyKey) || "[]");
 
-  // đánh dấu hoàn thành
-  data = data.map(x => {
-    if(x.id === id){
-      x.completed = true;
+  // Đánh dấu hoàn thành
+  data = data.map(item => {
+    if(item.id === id){
+      return { ...item, completed: true };
     }
-    return x;
+    return item;
   });
 
   localStorage.setItem(historyKey, JSON.stringify(data));
 
-  // Lọc lại danh sách còn cần kiểm
+  // Lọc lại danh sách cảnh báo từ dữ liệu mới
   const today = new Date();
   today.setHours(0,0,0,0);
 
-  let warningProducts = data.filter(item => {
+  const warningProducts = data.filter(item => {
 
-    if(item.completed === true) return false;
+    if(item.completed) return false;
 
     const m30 = new Date(item.M30);
-    if(!m30 || isNaN(m30)) return false;
+    if(isNaN(m30)) return false;
 
     m30.setHours(0,0,0,0);
 
@@ -887,11 +887,10 @@ function completeProduct(id){
     return today >= before15 && today <= after10;
   });
 
-  if(warningProducts.length){
-    // cập nhật lại popup ngay lập tức
+  // Render lại popup đúng dữ liệu mới
+  if(warningProducts.length > 0){
     showCheckDatePopup(warningProducts);
-  }else{
-    // nếu hết sản phẩm thì tự đóng popup
+  } else {
     closeCheckDatePopup();
   }
 
