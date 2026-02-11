@@ -364,9 +364,10 @@ function calculate(){
   const date20=new Date(nsxD.getTime()+total*0.8*86400000);
   const today=new Date();
 
-  const name=document.getElementById("productName").value.trim();
-  if(!name){alert("Nhập tên sản phẩm");return;}
-
+ let name=document.getElementById("productName").value.trim();
+if(!name){
+  name="(Chưa nhập tên)";
+}
   let warn30="",warn20="",b30="",b20="";
 
   if(today>=date30){warn30="⚠️ Báo cáo giải tồn";b30="blink30";}
@@ -375,10 +376,10 @@ function calculate(){
   result.innerHTML=`
   <div class="border p-3 mb-3 ${b30}">
   <b>MỐC 30%</b><br>${date30.toLocaleDateString("vi-VN")}
-  <div>${warn30||"<span class='text-green-700'>An toàn</span>"}</div></div>
+  <div>${warn30||"<span class='text-green-700'>Trong ngưỡng an toàn</span>"}</div></div>
   <div class="border p-3 ${b20}">
   <b>MỐC 20%</b><br>${date20.toLocaleDateString("vi-VN")}
-  <div>${warn20||"<span class='text-green-700'>An toàn</span>"}</div></div>`;
+  <div>${warn20||"<span class='text-green-700'>Trong ngưỡng an toàn</span>"}</div></div>`;
 
   saveHistory({name,barcode:barcode.value,nsx:nsxD,hsd:hsdD,date30,date20});
 
