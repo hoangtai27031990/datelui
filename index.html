@@ -129,10 +129,16 @@ body{background:#f3f4f6}
   </div>
 </div>
 <!-- POPUP KIỂM DATE -->
-<div id="checkDatePopup" class="hidden items-center justify-center fixed inset-0 bg-black/50 z-[3000]">
-  <div id="checkDateBox" class="bg-white p-5 rounded-xl w-[95%] max-w-md text-center">
-    <div class="font-bold text-lg mb-3 text-red-600">SẢN PHẨM CẦN KIỂM DATE</div>
-    <div id="checkDateList" class="text-left space-y-3 max-h-80 overflow-auto"></div>
+<div id="checkDateBox" class="bg-white p-5 rounded-xl w-[95%] max-w-md text-center">
+  <div class="font-bold text-lg mb-3 text-red-600">SẢN PHẨM CẦN KIỂM DATE</div>
+
+  <div id="checkDateList" class="text-left space-y-3 max-h-80 overflow-auto"></div>
+
+  <div class="mt-4">
+    <button onclick="closeCheckDatePopup()"
+      class="bg-gray-600 text-white px-4 py-2 rounded">
+      ĐÃ HIỂU
+    </button>
   </div>
 </div>
 <!-- SIDEBAR -->
