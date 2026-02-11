@@ -695,8 +695,7 @@ function checkAutoWarning(){
      warningList.push({
        index: index,
        name: item.TenSP || "-",
-       hsd: hsdDate,
-       level: isAfter20 ? "20" : "30"
+       hsd: hsdDate
      });
    }
 
@@ -726,9 +725,6 @@ function checkAutoWarning(){
    "NHẮC KIỂM DATE (" + warningList.length + " sản phẩm)";
 
  document.getElementById("popupMsg").innerHTML = html;
-
- const box = document.getElementById("popupBox");
- box.className = "bg-white p-5 rounded-xl w-[90%] max-w-sm text-center popup-pulse-30";
 
  alertPopup.classList.remove("hidden");
  alertPopup.classList.add("flex");
