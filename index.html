@@ -110,10 +110,6 @@ body{background:#f3f4f6}
   100% { box-shadow: 0 0 0 0 rgba(239,68,68,0); }
 }
 
-#checkDateBox{
-  border:3px solid #ef4444;
-  animation: pulseCheck 1.2s infinite;
-}
 
 </style>
 </head>
@@ -129,18 +125,29 @@ body{background:#f3f4f6}
   </div>
 </div>
 <!-- POPUP KIỂM DATE -->
-<div id="checkDateBox" class="bg-white p-5 rounded-xl w-[95%] max-w-md text-center">
-  <div class="font-bold text-lg mb-3 text-red-600">SẢN PHẨM CẦN KIỂM DATE</div>
+<div id="checkDateBox"
+     class="fixed inset-0 hidden items-center justify-center bg-black bg-opacity-50 z-[2100]">
 
-  <div id="checkDateList" class="text-left space-y-3 max-h-80 overflow-auto"></div>
+  <div class="bg-white p-5 rounded-xl w-[95%] max-w-md text-center">
 
-  <div class="mt-4">
-    <button onclick="closeCheckDatePopup()"
-      class="bg-gray-600 text-white px-4 py-2 rounded">
-      ĐÃ HIỂU
-    </button>
+    <div class="font-bold text-lg mb-3 text-red-600">
+      SẢN PHẨM CẦN KIỂM DATE
+    </div>
+
+    <div id="checkDateList"
+         class="text-left space-y-3 max-h-80 overflow-auto">
+    </div>
+
+    <div class="mt-4">
+      <button onclick="closeCheckDatePopup()"
+        class="bg-gray-600 text-white px-4 py-2 rounded">
+        ĐÃ HIỂU
+      </button>
+    </div>
+
   </div>
 </div>
+
 <!-- SIDEBAR -->
 <div id="sidebar">
   <div class="p-4 border-b text-center">
@@ -699,15 +706,20 @@ function resetForm(){
 
  if(warningProducts.length){
    showCheckDatePopup(warningProducts);
-
-   document.getElementById("checkDateBox").classList.remove("hidden");
-   document.getElementById("checkDateBox").classList.add("flex");
- }
+} else {
+   closeCheckDatePopup();
+}
 }
 
 function showCheckDatePopup(list){
 
+ const box = document.getElementById("checkDateBox");
  const container = document.getElementById("checkDateList");
+
+ if(!list || !list.length){
+   closeCheckDatePopup();
+   return;
+ }
 
  container.innerHTML = list.map(item => {
 
@@ -725,8 +737,11 @@ function showCheckDatePopup(list){
      </button>
    </div>`;
  }).join("");
-  
+
+ box.classList.remove("hidden");
+ box.classList.add("flex");
 }
+
 
 function completeProduct(id){
 
@@ -734,18 +749,18 @@ function completeProduct(id){
 
  data = data.map(x => {
    if(x.id === id){
-     x.completed = true;   // Đánh dấu đã xử lý
+     x.completed = true;
    }
    return x;
  });
 
  localStorage.setItem(historyKey, JSON.stringify(data));
 
- document.getElementById("checkDateBox").classList.add("hidden");
- document.getElementById("checkDateBox").classList.remove("flex");
-
  renderHistory();
+ checkStoredProducts(); // để tự kiểm tra lại
+
 }
+
 function closeCheckDatePopup(){
   document.getElementById("checkDateBox").classList.add("hidden");
   document.getElementById("checkDateBox").classList.remove("flex");
