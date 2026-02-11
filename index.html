@@ -1,5 +1,4 @@
 
-
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -557,8 +556,10 @@ function exportExcel(){
  XLSX.writeFile(wb,"saigoncoop_hsd.xlsx");
 
  localStorage.removeItem(historyKey);
- renderHistory();
- showPopup("export");
+removeExpiredProducts();
+renderHistory();
+checkAutoWarning();
+
 }
 
 function resetForm(){barcode.value="";nsx.value="";hsd.value="";result.innerHTML=""}
@@ -625,6 +626,31 @@ if(type === "export"){
  popup.classList.add("flex");
 
  if(type==="export") setTimeout(closePopup,2500);
+}
+  
+function removeExpiredProducts(){
+
+ let data = JSON.parse(localStorage.getItem(historyKey) || "[]");
+ if(!data.length) return;
+
+ const today = new Date();
+ today.setHours(0,0,0,0);
+
+ // Lọc giữ lại sản phẩm chưa hết hạn
+ let filtered = data.filter(item => {
+
+   if(!item.HSD) return false;
+
+   const hsdDate = new Date(item.HSD);
+   hsdDate.setHours(0,0,0,0);
+
+   return hsdDate >= today;
+ });
+
+ // Nếu có thay đổi thì ghi lại localStorage
+ if(filtered.length !== data.length){
+   localStorage.setItem(historyKey, JSON.stringify(filtered));
+ }
 }
 
 function checkAutoWarning(){
