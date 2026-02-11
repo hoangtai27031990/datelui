@@ -463,7 +463,11 @@ if(hsdD <= nsxD){
 
  const total=(hsdD-nsxD)/86400000;
  const date30=new Date(nsxD.getTime()+total*0.7*86400000);
- const date20=new Date(nsxD.getTime()+total*0.8*86400000);
+const date20=new Date(nsxD.getTime()+total*0.8*86400000);
+
+date30.setHours(0,0,0,0);
+date20.setHours(0,0,0,0);
+
  const today=new Date();
 
  let warn30="",warn20="",b30="",b20="",f30="Bình thường",f20="Bình thường";
@@ -648,24 +652,23 @@ function checkAutoWarning(){
 
    if(!item.Date30) return;
 
-   const date30 = new Date(item.Date30);
-   const hsdDate = new Date(item.HSD);
-
    const before10 = new Date(date30);
-   before10.setDate(before10.getDate() - 10);
+before10.setDate(before10.getDate() - 10);
 
-   const after10 = new Date(date30);
-   after10.setDate(after10.getDate() + 10);
+const after10 = new Date(date30);
+after10.setDate(after10.getDate() + 10);
 
-   // TỰ XOÁ nếu đã quá mốc 30%
-   if(today > date30){
-     return;
-   }
+// Chỉ xoá nếu đã quá 30% + 10 ngày
+if(today > after10){
+  return;
+}
 
-   newData.push(item);
+newData.push(item);
 
-   // chỉ cảnh báo trong khoảng ±10 ngày quanh mốc 30%
-   if(today >= before10 && today <= after10){
+// Cảnh báo nếu nằm trong ±10 ngày
+if(today >= before10 && today <= after10){
+   warningList.push(...);
+}
 
      warningList.push({
        index: newData.length - 1,
