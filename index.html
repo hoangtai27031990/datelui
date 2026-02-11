@@ -104,6 +104,16 @@ body{background:#f3f4f6}
   border: 3px solid #ef4444;
   animation: pulseRed 0.9s infinite;
 }
+  @keyframes pulseCheck {
+  0% { box-shadow: 0 0 0 0 rgba(239,68,68,0.5); }
+  70% { box-shadow: 0 0 0 25px rgba(239,68,68,0); }
+  100% { box-shadow: 0 0 0 0 rgba(239,68,68,0); }
+}
+
+#checkDateBox{
+  border:3px solid #ef4444;
+  animation: pulseCheck 1.2s infinite;
+}
 
 </style>
 </head>
@@ -118,7 +128,13 @@ body{background:#f3f4f6}
     <button onclick="closePopup()" class="brand-bg text-white px-4 py-2 rounded">Đã hiểu</button>
   </div>
 </div>
-
+<!-- POPUP KIỂM DATE -->
+<div id="checkDatePopup" class="hidden items-center justify-center fixed inset-0 bg-black/50 z-[3000]">
+  <div id="checkDateBox" class="bg-white p-5 rounded-xl w-[95%] max-w-md text-center">
+    <div class="font-bold text-lg mb-3 text-red-600">SẢN PHẨM CẦN KIỂM DATE</div>
+    <div id="checkDateList" class="text-left space-y-3 max-h-80 overflow-auto"></div>
+  </div>
+</div>
 <!-- SIDEBAR -->
 <div id="sidebar">
   <div class="p-4 border-b text-center">
@@ -459,8 +475,6 @@ if(hsdD <= nsxD){
   alert("HSD phải lớn hơn NSX"); return;
 }
 
- if(hsdD<=nsxD){alert("HSD phải lớn hơn NSX");return}
-
  const total=(hsdD-nsxD)/86400000;
  const date30=new Date(nsxD.getTime()+total*0.7*86400000);
  const date20=new Date(nsxD.getTime()+total*0.8*86400000);
@@ -554,7 +568,7 @@ function exportExcel(){
  showPopup("export");
 }
 
-function resetForm(){barcode.value="";nsx.value="";hsd.value="";result.innerHTML=""}
+
 renderHistory();
 
 function addBarcode(code){
@@ -582,7 +596,6 @@ function exportText(){
  a.href=url;a.download="barcode_print.txt";
  document.body.appendChild(a);a.click();document.body.removeChild(a);
  URL.revokeObjectURL(url);
-productName.value = "";
   
  localStorage.removeItem(printKey);
  renderPrint();
@@ -618,23 +631,6 @@ if(type === "export"){
  popup.classList.add("flex");
 
  if(type==="export") setTimeout(closePopup,2500);
-}
-<!-- POPUP KIỂM DATE -->
-<div id="checkDatePopup" class="hidden items-center justify-center fixed inset-0 bg-black/50 z-[3000]">
-  <div id="checkDateBox" class="bg-white p-5 rounded-xl w-[95%] max-w-md text-center">
-    <div class="font-bold text-lg mb-3 text-red-600">SẢN PHẨM CẦN KIỂM DATE</div>
-    <div id="checkDateList" class="text-left space-y-3 max-h-80 overflow-auto"></div>
-  </div>
-</div>
-@keyframes pulseCheck {
-  0% { box-shadow: 0 0 0 0 rgba(239,68,68,0.5); }
-  70% { box-shadow: 0 0 0 25px rgba(239,68,68,0); }
-  100% { box-shadow: 0 0 0 0 rgba(239,68,68,0); }
-}
-
-#checkDateBox{
-  border:3px solid #ef4444;
-  animation: pulseCheck 1.2s infinite;
 }
 
 function closePopup(){
