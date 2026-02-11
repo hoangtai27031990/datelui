@@ -648,34 +648,36 @@ function checkAutoWarning(){
 
   data.forEach((item,index)=>{
 
-    if(!item.Date30 || !item.HSD){
+    if(!item.date30 || !item.hsd){
       newData.push(item);
       return;
     }
 
-    const date30 = new Date(item.Date30);
+    const date30 = new Date(item.date30);
     date30.setHours(0,0,0,0);
 
-    const hsdDate = new Date(item.HSD);
+    const hsdDate = new Date(item.hsd);
     hsdDate.setHours(0,0,0,0);
 
     const before10 = new Date(date30);
     before10.setDate(before10.getDate() - 10);
+    before10.setHours(0,0,0,0);
 
     const after10 = new Date(date30);
-after10.setDate(after10.getDate() + 10);
+    after10.setDate(after10.getDate() + 10);
+    after10.setHours(0,0,0,0);
 
-if(today > after10){
-    return false;
-}
+    // Nếu quá 10 ngày sau mốc 30% → tự xoá
+    if(today > after10){
+        return;
+    }
 
     newData.push(item);
 
-    // Nếu nằm trong khoảng ±10 ngày → cảnh báo
     if(today >= before10 && today <= after10){
       warningList.push({
         index: newData.length - 1,
-        name: item.TenSP || "-",
+        name: item.tenSP || "-",
         date30: date30,
         hsd: hsdDate
       });
@@ -719,6 +721,7 @@ if(today > after10){
   alertPopup.classList.remove("hidden");
   alertPopup.classList.add("flex");
 }
+
 
 function completeProduct(index){
 
