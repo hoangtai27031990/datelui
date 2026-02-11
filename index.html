@@ -509,13 +509,13 @@ if(hsdD <= nsxD){
 <div>${warn20||"<span class='text-green-700'>Trong ngưỡng an toàn</span>"}</div>
 </div>`;
 
-saveHistory(f30,f20,date30,hsdD,nsxD);
+saveHistory(nsxD, hsdD, date30, date20, f30, f20);
 
  if(today>=date20) showPopup("20");
  else if(today>=date30) showPopup("30");
 }
 
-function function saveHistory(nsxD, hsdD, date30, date20, f30, f20){
+function saveHistory(nsxD, hsdD, date30, date20, f30, f20){
 
    const history = JSON.parse(localStorage.getItem(historyKey)) || [];
 
@@ -745,14 +745,14 @@ function showCheckDatePopup(list){
    return;
  }
 
- container.innerHTML = list.map(item => {
+container.innerHTML = list.map(item => {
 
-   const m30 = new Date(item["Mốc 30%"]).toLocaleDateString("vi-VN");
-   const hsd = new Date(item["HSD"]).toLocaleDateString("vi-VN");
+   const m30 = new Date(item.M30).toLocaleDateString("vi-VN");
+   const hsd = new Date(item.HSD).toLocaleDateString("vi-VN");
 
    return `
    <div class="border p-2 rounded">
-     <div><b>${item["Tên sản phẩm"]}</b></div>
+     <div><b>${item.TenSP || "-"}</b></div>
      <div>Ngưỡng 30%: ${m30}</div>
      <div>HSD: ${hsd}</div>
      <button onclick="completeProduct(${item.id})"
@@ -760,7 +760,7 @@ function showCheckDatePopup(list){
        HOÀN THÀNH
      </button>
    </div>`;
- }).join("");
+}).join("");
 
  box.classList.remove("hidden");
  box.classList.add("flex");
