@@ -489,10 +489,6 @@ saveHistory(
   date20.toLocaleDateString("en-CA")
 );
 
- if(today>=date20) showPopup("20");
- else if(today>=date30) showPopup("30");
-}
-
 function saveHistory(f30,f20,date30,date20){
 
  let h = JSON.parse(localStorage.getItem(historyKey) || "[]");
@@ -667,7 +663,6 @@ function removeExpiredProducts(){
  }
 }
 
-
 function checkAutoWarning(){
 
  let data = JSON.parse(localStorage.getItem(historyKey) || "[]");
@@ -678,46 +673,49 @@ function checkAutoWarning(){
 
  let warningList = [];
 
- for(let item of data){
+ data.forEach((item,index)=>{
 
-   if(!item.HSD || !item.Date30) continue;
+   if(!item.HSD || !item.Date30 || !item.Date20) return;
 
    const hsdDate = new Date(item.HSD + "T00:00:00");
    const date30 = new Date(item.Date30 + "T00:00:00");
+   const date20 = new Date(item.Date20 + "T00:00:00");
 
    const startWindow = new Date(date30);
    startWindow.setDate(startWindow.getDate() - 15);
 
-   const daysLeft = Math.ceil((hsdDate - today) / 86400000);
+   const isBefore30Window =
+     today >= startWindow && today < date20;
 
-   const isIn30Window =
-     today >= startWindow && today <= date30;
+   const isAfter20 =
+     today >= date20 && today <= hsdDate;
 
-   const isNearExpire =
-     daysLeft <= 10 && daysLeft >= 0;
-
-   if(isIn30Window || isNearExpire){
+   if(isBefore30Window || isAfter20){
 
      warningList.push({
+       index: index,
        name: item.TenSP || "-",
        hsd: hsdDate,
-       note: isIn30Window
-         ? "Sắp đạt mốc 30% (" + date30.toLocaleDateString("vi-VN") + ")"
-         : "Còn " + daysLeft + " ngày tới HSD"
+       level: isAfter20 ? "20" : "30"
      });
    }
- }
+
+ });
 
  if(!warningList.length) return;
 
- let html = "<div class='text-left max-h-60 overflow-auto space-y-2'>";
+ let html = "<div class='text-left max-h-60 overflow-auto space-y-3'>";
 
  warningList.forEach((p,i)=>{
    html += `
      <div class="border-b pb-2">
        <div><b>${i+1}. ${p.name}</b></div>
        <div>HSD: ${p.hsd.toLocaleDateString("vi-VN")}</div>
-       <div class="text-orange-600 font-semibold">${p.note}</div>
+       <button 
+         onclick="completeProduct(${p.index})"
+         class="mt-2 bg-green-600 text-white px-3 py-1 rounded text-sm">
+         Đã hoàn thành
+       </button>
      </div>
    `;
  });
@@ -729,10 +727,24 @@ function checkAutoWarning(){
 
  document.getElementById("popupMsg").innerHTML = html;
 
+ const box = document.getElementById("popupBox");
+ box.className = "bg-white p-5 rounded-xl w-[90%] max-w-sm text-center popup-pulse-30";
+
  alertPopup.classList.remove("hidden");
  alertPopup.classList.add("flex");
 }
 
+function completeProduct(index){
+
+ let data = JSON.parse(localStorage.getItem(historyKey) || "[]");
+
+ data.splice(index,1);
+
+ localStorage.setItem(historyKey, JSON.stringify(data));
+
+ closePopup();
+ renderHistory();
+}
 
 function closePopup(){
  alertPopup.classList.add("hidden");
@@ -745,6 +757,11 @@ function resetForm(){
   beforeHsdValue.value="";
   periodValue.value="";
   result.innerHTML="";
+}
+window.onload = function(){
+  removeExpiredProducts();
+  renderHistory();
+  checkAutoWarning();
 }
 
 </script>
