@@ -556,7 +556,6 @@ function exportExcel(){
 
  localStorage.removeItem(historyKey);
 renderHistory();
-checkAutoWarning();
  showPopup("export");
 }
 
@@ -639,81 +638,90 @@ function resetForm(){
 }
 function checkAutoWarning(){
 
- let data = JSON.parse(localStorage.getItem(historyKey) || "[]");
- if(!data.length) return;
+  let data = JSON.parse(localStorage.getItem(historyKey) || "[]");
+  if(!data.length) return;
 
- const today = new Date();
- today.setHours(0,0,0,0);
+  const today = new Date();
+  today.setHours(0,0,0,0);
 
- let warningList = [];
- let newData = [];
+  let warningList = [];
+  let newData = [];
 
- data.forEach((item,index)=>{
+  data.forEach((item,index)=>{
 
-   if(!item.Date30) return;
+    if(!item.Date30 || !item.HSD){
+      newData.push(item);
+      return;
+    }
 
-   const before10 = new Date(date30);
-before10.setDate(before10.getDate() - 10);
+    const date30 = new Date(item.Date30);
+    date30.setHours(0,0,0,0);
 
-const after10 = new Date(date30);
-after10.setDate(after10.getDate() + 10);
+    const hsdDate = new Date(item.HSD);
+    hsdDate.setHours(0,0,0,0);
 
-// Chỉ xoá nếu đã quá 30% + 10 ngày
-if(today > after10){
-  return;
+    const before10 = new Date(date30);
+    before10.setDate(before10.getDate() - 10);
+
+    const after10 = new Date(date30);
+    after10.setDate(after10.getDate() + 10);
+
+    // Nếu đã quá 30% + 10 ngày → tự xoá khỏi lịch sử
+    if(today > after10){
+      return;
+    }
+
+    newData.push(item);
+
+    // Nếu nằm trong khoảng ±10 ngày → cảnh báo
+    if(today >= before10 && today <= after10){
+      warningList.push({
+        index: newData.length - 1,
+        name: item.TenSP || "-",
+        date30: date30,
+        hsd: hsdDate
+      });
+    }
+
+  });
+
+  localStorage.setItem(historyKey, JSON.stringify(newData));
+
+  if(!warningList.length) return;
+
+  let html = "<div class='text-left max-h-60 overflow-auto space-y-3'>";
+
+  warningList.forEach((p,i)=>{
+    html += `
+      <div class="border-b pb-2">
+        <div><b>${i+1}. ${p.name}</b></div>
+        <div>Mốc 30%: ${p.date30.toLocaleDateString("vi-VN")}</div>
+        <div>HSD: ${p.hsd.toLocaleDateString("vi-VN")}</div>
+        <button 
+          onclick="completeProduct(${p.index})"
+          class="mt-2 bg-green-600 text-white px-3 py-1 rounded text-sm">
+          Hoàn thành
+        </button>
+      </div>
+    `;
+  });
+
+  html += "</div>";
+
+  document.getElementById("popupTitle").innerText =
+    "CẢNH BÁO KIỂM SOÁT DATE (" + warningList.length + " SP)";
+
+  document.getElementById("popupMsg").innerHTML = html;
+
+  const popupBox = document.getElementById("popupBox");
+  popupBox.className =
+    "bg-white p-5 rounded-xl w-[90%] max-w-sm text-center popup-pulse-30";
+
+  const alertPopup = document.getElementById("alertPopup");
+  alertPopup.classList.remove("hidden");
+  alertPopup.classList.add("flex");
 }
 
-newData.push(item);
-
-// Cảnh báo nếu nằm trong ±10 ngày
-if(today >= before10 && today <= after10){
-   warningList.push(...);
-}
-
-     warningList.push({
-       index: newData.length - 1,
-       name: item.TenSP || "-",
-       date30: date30,
-       hsd: hsdDate
-     });
-   }
-
- });
-
- localStorage.setItem(historyKey, JSON.stringify(newData));
-
- if(!warningList.length) return;
-
- let html = "<div class='text-left max-h-60 overflow-auto space-y-3'>";
-
- warningList.forEach((p,i)=>{
-   html += `
-     <div class="border-b pb-2">
-       <div><b>${i+1}. ${p.name}</b></div>
-       <div>Mốc 30%: ${p.date30.toLocaleDateString("vi-VN")}</div>
-       <div>HSD: ${p.hsd.toLocaleDateString("vi-VN")}</div>
-       <button 
-         onclick="completeProduct(${p.index})"
-         class="mt-2 bg-green-600 text-white px-3 py-1 rounded text-sm">
-         Hoàn thành
-       </button>
-     </div>
-   `;
- });
-
- html += "</div>";
-
- popupTitle.innerText =
-   "CẢNH BÁO KIỂM SOÁT DATE (" + warningList.length + " SP)";
-
- popupMsg.innerHTML = html;
-
- popupBox.className =
-   "bg-white p-5 rounded-xl w-[90%] max-w-sm text-center popup-pulse-30";
-
- alertPopup.classList.remove("hidden");
- alertPopup.classList.add("flex");
-}
 function completeProduct(index){
 
  let data = JSON.parse(localStorage.getItem(historyKey) || "[]");
@@ -721,7 +729,8 @@ function completeProduct(index){
  localStorage.setItem(historyKey, JSON.stringify(data));
 
  closePopup();
- renderHistory();
+renderHistory();
+checkAutoWarning();
 }
 
 </script>
