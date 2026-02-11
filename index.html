@@ -685,21 +685,48 @@ function checkAutoWarning(){
 
    const daysLeft = Math.ceil((hsdDate - today) / 86400000);
 
-   // CHỈ cảnh báo nếu:
-   // 1. Đã tới mốc 30%
-   // HOẶC
-   // 2. Còn <=10 ngày
+   // CHỈ cảnh báo 30% hoặc còn <=10 ngày
    if(today >= date30 || daysLeft <= 10){
 
      warningList.push({
        name: item.TenSP || "-",
        hsd: hsdDate,
+       type: today >= date30 ? "30" : "10",
        note: today >= date30
          ? "Đạt mốc 30%"
          : "Còn " + daysLeft + " ngày"
      });
    }
  }
+
+ if(!warningList.length) return;
+
+ let html = "<div class='text-left max-h-60 overflow-auto space-y-2'>";
+
+ warningList.forEach((p,i)=>{
+   html += `
+     <div class="border-b pb-2">
+       <div><b>${i+1}. ${p.name}</b></div>
+       <div>HSD: ${p.hsd.toLocaleDateString("vi-VN")}</div>
+       <div class="text-orange-600 font-semibold">${p.note}</div>
+     </div>
+   `;
+ });
+
+ html += "</div>";
+
+ document.getElementById("popupTitle").innerText =
+   "NHẮC KIỂM DATE (" + warningList.length + " sản phẩm)";
+
+ document.getElementById("popupMsg").innerHTML = html;
+
+ const box = document.getElementById("popupBox");
+ box.className = "bg-white p-5 rounded-xl w-[90%] max-w-sm text-center popup-pulse-30";
+
+ alertPopup.classList.remove("hidden");
+ alertPopup.classList.add("flex");
+}
+
 
 function closePopup(){
  alertPopup.classList.add("hidden");
