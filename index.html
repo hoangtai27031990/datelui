@@ -641,40 +641,52 @@ function exportText(){
 }
 
 function showPopup(type){
- const popup=document.getElementById("alertPopup");
- const box=document.getElementById("popupBox");
- const title=document.getElementById("popupTitle");
- const msg=document.getElementById("popupMsg");
 
- box.className="bg-white p-5 rounded-xl w-[90%] max-w-sm text-center";
+ if(isPopupShowing) return; // chặn mở chồng
+ isPopupShowing = true;
 
- if(type === "30"){
-  title.innerText = "CẢNH BÁO MỐC 30%";
-  msg.innerText = "Báo cáo quản lý để thực hiện giải tồn.";
-  box.classList.add("popup-pulse-30");
-}
+ const popup = document.getElementById("alertPopup");
+ const box = document.getElementById("popupBox");
+ const title = document.getElementById("popupTitle");
+ const msg = document.getElementById("popupMsg");
 
-if(type === "20"){
+ // reset class trước khi thêm hiệu ứng mới
+ box.className = "bg-white p-5 rounded-xl w-[90%] max-w-sm text-center";
+
+ // Ưu tiên 20% trước
+ if(type === "20"){
   title.innerText = "CẢNH BÁO MỐC 20%";
   msg.innerText = "Rút hàng khỏi quầy ngay.";
   box.classList.add("popup-pulse-20");
-}
+ }
 
-if(type === "export"){
-  title.innerText = "✅ XUẤT FILE THÀNH CÔNG";
+ else if(type === "30"){
+  title.innerText = "CẢNH BÁO MỐC 30%";
+  msg.innerText = "Báo cáo quản lý để thực hiện giải tồn.";
+  box.classList.add("popup-pulse-30");
+ }
+
+ else if(type === "export"){
+  title.innerText = "XUẤT FILE THÀNH CÔNG";
   msg.innerText = "Dữ liệu đã được tải về và hệ thống đã sẵn sàng cho lần tiếp theo.";
-}
+ }
 
  popup.classList.remove("hidden");
  popup.classList.add("flex");
 
- if(type==="export") setTimeout(closePopup,2500);
+ if(type === "export"){
+   setTimeout(closePopup, 2500);
+ }
 }
 
+
 function closePopup(){
- alertPopup.classList.add("hidden");
- alertPopup.classList.remove("flex");
+ const popup = document.getElementById("alertPopup");
+ popup.classList.add("hidden");
+ popup.classList.remove("flex");
+ isPopupShowing = false;
 }
+
   
 function resetForm(){
   productName.value="";
@@ -686,7 +698,7 @@ function resetForm(){
   result.innerHTML="";
 }
 function checkStoredProducts(){
-
+if(isPopupShowing) return;
  let data = JSON.parse(localStorage.getItem(historyKey) || "[]");
 
  if(!Array.isArray(data) || !data.length){
