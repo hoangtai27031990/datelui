@@ -711,8 +711,11 @@ data = data.filter(item => {
 
     if(item.completed) completed++;
 
-    if(item.CanhBao30 === "Giải tồn") count30++;
-    if(item.CanhBao20 === "Rút hàng") count20++;
+const m30 = new Date(item.M30);
+const m20 = new Date(item.M20);
+
+if(today >= m30) count30++;
+if(today >= m20) count20++;
 
     const key = item.Barcode || item.TenSP || "unknown";
 
