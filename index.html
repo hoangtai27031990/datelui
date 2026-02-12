@@ -305,11 +305,7 @@ body{background:#f3f4f6}
 <h2 class="font-bold brand-text mb-2">Lịch sử tính toán</h2>
 
 <div class="flex gap-2 mb-2">
-  <button onclick="setFilter('all')" id="f-all" class="filter-btn active">Tất cả</button>
-  <button onclick="setFilter('30')" id="f-30" class="filter-btn">Giải tồn (30%)</button>
-  <button onclick="setFilter('20')" id="f-20" class="filter-btn">Rút hàng (20%)</button>
-</div>
-
+  
 <div id="history" class="text-sm space-y-1 max-h-64 overflow-auto"></div>
 </div>
 </div>
@@ -424,7 +420,7 @@ function changeCalcMode(){
 /* ================= SCAN CONFIG ================= */
 const scanConfigAndroidWeak = { fps: 10, qrbox: 250 };
 
-let qr=null,qr2=null,currentFilter="all";
+let qr=null,qr2=null;
 let isScanning = false;
 let isPopupShowing = false;
 
@@ -638,23 +634,10 @@ function saveHistory(nsxD, hsdD, date30, date20, f30, f20){
 }
 
 
-function setFilter(type){
- currentFilter=type;
- document.querySelectorAll(".filter-btn").forEach(b=>b.classList.remove("active"));
- document.getElementById("f-"+type).classList.add("active");
- renderHistory();
-}
-
 function renderHistory(){
 
  let data = JSON.parse(localStorage.getItem(historyKey) || "[]");
 data = data.filter(x => !x.expired);
- // SỬA FILTER ĐÚNG FIELD
- if(currentFilter==="30")
-   data = data.filter(x => x.CanhBao30 === "Giải tồn");
-
- if(currentFilter==="20")
-   data = data.filter(x => x.CanhBao20 === "Rút hàng");
 
  if(!data.length){
    history.innerHTML="<div class='text-gray-400 italic'>Không có dữ liệu phù hợp</div>";
