@@ -690,17 +690,18 @@ ${x.CanhBao20}
 function renderDashboard(){
 
   let data = JSON.parse(localStorage.getItem(historyKey) || "[]");
-  if(!Array.isArray(data)) return;
+  if(!Array.isArray(data) || !data.length){
+    document.getElementById("db30").innerText = 0;
+    document.getElementById("db20").innerText = 0;
+    document.getElementById("dbRate").innerText = "0%";
+    document.getElementById("dbTopSku").innerHTML =
+      "<div class='text-green-700 font-semibold'>Không có dữ liệu</div>";
+    return;
+  }
 
   const today = new Date();
   today.setHours(0,0,0,0);
-data = data.filter(item => {
-    if(!item.NSX) return true; // nếu không có ngày thì giữ lại
-    const nsxDate = new Date(item.NSX);
-    nsxDate.setHours(0,0,0,0);
-    const diffDays = (today - nsxDate) / 86400000;
-    return diffDays <= 90; // chỉ lấy dữ liệu trong 90 ngày
-  });
+
   let count30 = 0;
   let count20 = 0;
   let completed = 0;
@@ -711,46 +712,54 @@ data = data.filter(item => {
 
     if(item.completed) completed++;
 
-const m30 = new Date(item.M30);
-const m20 = new Date(item.M20);
+    const m30 = new Date(item.M30);
+    const m20 = new Date(item.M20);
 
-if(today >= m30) count30++;
-if(today >= m20) count20++;
+    if(isNaN(m30) || isNaN(m20)) return;
+
+    m30.setHours(0,0,0,0);
+    m20.setHours(0,0,0,0);
+
+    if(today >= m20){
+      count20++;
+    }
+    else if(today >= m30){
+      count30++;
+    }
 
     const key = item.Barcode || item.TenSP || "unknown";
 
     if(!skuMap[key]){
       skuMap[key] = {
-        name: item.TenSP || "-",
+        name: item.TenSP || key,
         count: 0
       };
     }
 
-    if(item.CanhBao30 === "Giải tồn" || item.CanhBao20 === "Rút hàng"){
+    if(today >= m30){
       skuMap[key].count++;
     }
 
   });
 
-  // cập nhật chỉ số
   document.getElementById("db30").innerText = count30;
   document.getElementById("db20").innerText = count20;
 
-  const rate = data.length ? Math.round((completed / data.length) * 100) : 0;
+  const rate = Math.round((completed / data.length) * 100);
   document.getElementById("dbRate").innerText = rate + "%";
 
-  // TOP 5 SKU
-const top = Object.values(skuMap)
-  .filter(x => x.count > 0)
-  .sort((a,b)=>b.count-a.count)
-  .slice(0,5);
+  const top = Object.values(skuMap)
+    .filter(x => x.count > 0)
+    .sort((a,b)=>b.count-a.count)
+    .slice(0,5);
 
   const container = document.getElementById("dbTopSku");
 
- if(!top.length){
-  container.innerHTML = "<div class='text-green-700 font-semibold'>Quầy đang kiểm soát tốt</div>";
-  return;
-}
+  if(!top.length){
+    container.innerHTML =
+      "<div class='text-green-700 font-semibold'>Quầy đang kiểm soát tốt</div>";
+    return;
+  }
 
   container.innerHTML = top.map(s => `
     <div class="flex justify-between border-b pb-1">
@@ -759,6 +768,7 @@ const top = Object.values(skuMap)
     </div>
   `).join("");
 }
+
 
 function clearHistory(){
 
