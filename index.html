@@ -343,28 +343,25 @@ function autoCleanExpired(){
   const today = new Date();
   today.setHours(0,0,0,0);
 
-  const filtered = data.filter(item => {
+  data = data.map(item => {
 
-    if(!item.HSD) return true;
+    if(!item.HSD) return item;
 
     const hsd = new Date(item.HSD);
-
-    if(isNaN(hsd)) return true;
+    if(isNaN(hsd)) return item;
 
     hsd.setHours(0,0,0,0);
 
-    // ❌ XÓA nếu đã qua ngày hôm nay
     if(hsd < today){
-      return false;
+      return { ...item, expired: true };  // ĐÁNH DẤU
     }
 
-    return true;
+    return { ...item, expired: false };
   });
 
-  if(filtered.length !== data.length){
-    localStorage.setItem(historyKey, JSON.stringify(filtered));
-  }
+  localStorage.setItem(historyKey, JSON.stringify(data));
 }
+
 
 const printKey="coop_print_history";
 
@@ -651,7 +648,7 @@ function setFilter(type){
 function renderHistory(){
 
  let data = JSON.parse(localStorage.getItem(historyKey) || "[]");
-
+data = data.filter(x => !x.expired);
  // SỬA FILTER ĐÚNG FIELD
  if(currentFilter==="30")
    data = data.filter(x => x.CanhBao30 === "Giải tồn");
@@ -709,6 +706,8 @@ function renderDashboard(){
   const skuMap = {};
 
   data.forEach(item => {
+
+  if(item.expired) return;  // BỎ QUA HÀNG HẾT HSD
 
     if(item.completed) completed++;
 
