@@ -693,7 +693,13 @@ function renderDashboard(){
 
   const today = new Date();
   today.setHours(0,0,0,0);
-
+data = data.filter(item => {
+    if(!item.NSX) return true; // nếu không có ngày thì giữ lại
+    const nsxDate = new Date(item.NSX);
+    nsxDate.setHours(0,0,0,0);
+    const diffDays = (today - nsxDate) / 86400000;
+    return diffDays <= 90; // chỉ lấy dữ liệu trong 90 ngày
+  });
   let count30 = 0;
   let count20 = 0;
   let completed = 0;
@@ -730,16 +736,17 @@ function renderDashboard(){
   document.getElementById("dbRate").innerText = rate + "%";
 
   // TOP 5 SKU
-  const top = Object.values(skuMap)
-    .sort((a,b)=>b.count-a.count)
-    .slice(0,5);
+const top = Object.values(skuMap)
+  .filter(x => x.count > 0)
+  .sort((a,b)=>b.count-a.count)
+  .slice(0,5);
 
   const container = document.getElementById("dbTopSku");
 
-  if(!top.length){
-    container.innerHTML = "<div class='text-gray-400 italic'>Chưa có dữ liệu</div>";
-    return;
-  }
+ if(!top.length){
+  container.innerHTML = "<div class='text-green-700 font-semibold'>Quầy đang kiểm soát tốt</div>";
+  return;
+}
 
   container.innerHTML = top.map(s => `
     <div class="flex justify-between border-b pb-1">
