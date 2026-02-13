@@ -122,19 +122,22 @@ button.print{
   </div>
 
   <!-- TAB TÍNH HSD -->
-  <div id="hsd" class="tab-content active">
-    <h2>TÍNH HẠN SỬ DỤNG</h2>
+<div id="hsd" class="tab-content active">
+  <h2>TÍNH HẠN SỬ DỤNG</h2>
 
-    <label>Ngày sản xuất:</label>
-    <input type="date" id="nsx">
+  <label>Phương thức nhập:</label>
+  <select id="mode" onchange="changeMode()">
+    <option value="full">Có NSX và HSD</option>
+    <option value="nsx">Chỉ có NSX</option>
+    <option value="hsd">Chỉ có HSD</option>
+  </select>
 
-    <label>Số ngày sử dụng:</label>
-    <input type="number" id="songay" placeholder="Ví dụ: 180">
+  <div id="inputArea"></div>
 
-    <button class="action" onclick="tinhHSD()">Tính HSD</button>
+  <button class="action" onclick="calculate()">TÍNH TOÁN</button>
 
-    <div class="result" id="ketquaHSD"></div>
-  </div>
+  <div class="result" id="resultBox"></div>
+</div>
 
   <!-- TAB IN BẢNG GIÁ -->
   <div id="print" class="tab-content">
@@ -166,14 +169,110 @@ function openTab(evt, tabId){
   evt.currentTarget.classList.add("active");
 }
 
-function tinhHSD(){
-  const nsxValue=document.getElementById("nsx").value;
-  const soNgay=parseInt(document.getElementById("songay").value);
+function changeMode(){
+  const mode=document.getElementById("mode").value;
+  const area=document.getElementById("inputArea");
 
-  if(!nsxValue || !soNgay){
-    alert("Vui lòng nhập đầy đủ thông tin.");
+  if(mode==="full"){
+    area.innerHTML=`
+      <label>Ngày sản xuất:</label>
+      <input type="date" id="nsx">
+
+      <label>Hạn sử dụng:</label>
+      <input type="date" id="hsd">
+    `;
+  }
+
+  if(mode==="nsx"){
+    area.innerHTML=`
+      <label>Ngày sản xuất:</label>
+      <input type="date" id="nsx">
+
+      <label>Thời hạn:</label>
+      <input type="number" id="duration">
+
+      <select id="unit">
+        <option value="day">Ngày</option>
+        <option value="month">Tháng</option>
+        <option value="year">Năm</option>
+      </select>
+    `;
+  }
+
+  if(mode==="hsd"){
+    area.innerHTML=`
+      <label>Hạn sử dụng:</label>
+      <input type="date" id="hsd">
+
+      <label>Thời hạn:</label>
+      <input type="number" id="duration">
+
+      <select id="unit">
+        <option value="day">Ngày</option>
+        <option value="month">Tháng</option>
+        <option value="year">Năm</option>
+      </select>
+    `;
+  }
+}
+
+function convertToDays(value,unit){
+  if(unit==="day") return value;
+  if(unit==="month") return value*30;
+  if(unit==="year") return value*365;
+}
+
+function calculate(){
+  const mode=document.getElementById("mode").value;
+  let nsx,hsd;
+
+  if(mode==="full"){
+    nsx=new Date(document.getElementById("nsx").value);
+    hsd=new Date(document.getElementById("hsd").value);
+  }
+
+  if(mode==="nsx"){
+    nsx=new Date(document.getElementById("nsx").value);
+    const duration=parseInt(document.getElementById("duration").value);
+    const unit=document.getElementById("unit").value;
+
+    const days=convertToDays(duration,unit);
+    hsd=new Date(nsx);
+    hsd.setDate(hsd.getDate()+days);
+  }
+
+  if(mode==="hsd"){
+    hsd=new Date(document.getElementById("hsd").value);
+    const duration=parseInt(document.getElementById("duration").value);
+    const unit=document.getElementById("unit").value;
+
+    const days=convertToDays(duration,unit);
+    nsx=new Date(hsd);
+    nsx.setDate(nsx.getDate()-days);
+  }
+
+  if(!nsx || !hsd){
+    alert("Thiếu dữ liệu.");
     return;
   }
+
+  const totalDays=Math.floor((hsd-nsx)/(1000*60*60*24));
+
+  const luiHang=new Date(hsd);
+  luiHang.setDate(hsd.getDate()-Math.floor(totalDays*0.2));
+
+  const giaiTon=new Date(hsd);
+  giaiTon.setDate(hsd.getDate()-Math.floor(totalDays*0.3));
+
+  document.getElementById("resultBox").innerHTML=`
+    NSX: ${nsx.toLocaleDateString("vi-VN")} <br>
+    HSD: ${hsd.toLocaleDateString("vi-VN")} <br><br>
+    Ngày lùi hàng (20%): ${luiHang.toLocaleDateString("vi-VN")} <br>
+    Ngày giải tồn (30%): ${giaiTon.toLocaleDateString("vi-VN")}
+  `;
+}
+
+changeMode();
 
   const nsx=new Date(nsxValue);
   nsx.setDate(nsx.getDate()+soNgay);
