@@ -778,9 +778,16 @@ function autoClean90Days(){
   const now = new Date();
 
   data = data.filter(item => {
+
     if(!item.ThoiGian) return true;
 
-    const created = new Date(item.NSX); 
+    // ThoiGian đang lưu dạng vi-VN -> cần parse lại
+    const parts = item.ThoiGian.split(" ");
+    if(!parts[0]) return true;
+
+    const [day, month, year] = parts[0].split("/");
+    const created = new Date(`${year}-${month}-${day}`);
+
     if(isNaN(created)) return true;
 
     const diff = (now - created) / 86400000;
@@ -790,7 +797,6 @@ function autoClean90Days(){
 
   localStorage.setItem(historyKey, JSON.stringify(data));
 }
-
 
 function renderDashboard(){
 
@@ -852,13 +858,48 @@ function renderDashboard(){
 
   /* ==== TOP SKU CẬN DATE ==== */
 
-  const sorted = [...data].sort((a,b)=>{
-    return new Date(a.HSD) - new Date(b.HSD);
-  });
+  /* ==== TOP SKU ĐÃ DÍNH MỐC 20% ==== */
 
-  const top5 = sorted.slice(0,5);
+const today = new Date();
+today.setHours(0,0,0,0);
 
+const hit20 = data.filter(item => {
+
+  const m20 = new Date(item.M20);
+  if(isNaN(m20)) return false;
+
+  m20.setHours(0,0,0,0);
+
+  return today >= m20;
+});
+
+/* Sắp xếp theo HSD gần nhất */
+const sorted = hit20.sort((a,b)=>{
+  return new Date(a.HSD) - new Date(b.HSD);
+});
+
+const top5 = sorted.slice(0,5);
+
+
+ if(!top5.length){
+  dbTopSku.innerHTML = `
+    <div class="text-green-700 text-sm">
+      Chưa có sản phẩm chạm mốc 20%
+    </div>
+  `;
+}else{
   dbTopSku.innerHTML = top5.map(x=>{
+    return `
+      <div class="border p-2 rounded">
+        <div><b>${x.TenSP || "-"}</b></div>
+        <div class="text-xs text-gray-500">
+          HSD: ${new Date(x.HSD).toLocaleDateString("vi-VN")}
+        </div>
+      </div>
+    `;
+  }).join("");
+}
+
     return `
       <div class="border p-2 rounded">
         <div><b>${x.TenSP || "-"}</b></div>
