@@ -276,44 +276,7 @@ body{background:#f3f4f6}
 
 <div id="statistic" class="text-sm pt-2"></div>
 </div>
-<!-- ================= DASHBOARD MODULE ================= -->
-<div id="dashboardModule" class="card p-4 mt-4">
-  <h2 class="font-bold brand-text mb-3">Dashboard thống kê</h2>
 
-  <div class="grid grid-cols-2 gap-3 text-sm">
-
-    <div class="border p-3 rounded">
-      <div class="text-gray-500">Tổng theo dõi</div>
-      <div id="dbTotal" class="text-xl font-bold">0</div>
-    </div>
-
-    <div class="border p-3 rounded">
-      <div class="text-gray-500">Tỉ lệ đã xử lý</div>
-      <div id="dbProcessed" class="text-xl font-bold">0%</div>
-    </div>
-
-    <div class="border p-3 rounded">
-      <div class="text-orange-600">SKU mốc 30%</div>
-      <div id="db30" class="text-xl font-bold">0</div>
-    </div>
-
-    <div class="border p-3 rounded">
-      <div class="text-red-600">SKU mốc 20%</div>
-      <div id="db20" class="text-xl font-bold">0</div>
-    </div>
-
-  </div>
-
-  <div class="mt-4">
-    <div class="font-semibold mb-1">Tình trạng quản lý quầy</div>
-    <div id="dbStatus" class="text-sm font-bold"></div>
-  </div>
-
-  <div class="mt-4">
-    <div class="font-semibold mb-2">Top SKU cận date</div>
-    <div id="dbTopSku" class="text-sm space-y-1"></div>
-  </div>
-</div>
 <div class="card p-3 mt-4">
 <h2 class="font-bold brand-text mb-2">Lịch sử tính toán</h2>
 
@@ -622,8 +585,7 @@ if(hsdD <= nsxD){
 
 saveHistory(nsxD, hsdD, date30, date20, f30, f20);
 autoCleanExpired();
-renderDashboard();
-  
+
  if(today>=date20) showPopup("20");
  else if(today>=date30) showPopup("30");
 }
@@ -632,18 +594,18 @@ function saveHistory(nsxD, hsdD, date30, date20, f30, f20){
 
    const history = JSON.parse(localStorage.getItem(historyKey)) || [];
 
-   const record = {
-      id: Date.now() + Math.random(),
-      TenSP: productName.value.trim() || "",
-      Barcode: barcode.value.trim() || "",
-      NSX: nsxD.toISOString(),
-      HSD: hsdD.toISOString(),
-      M30: date30.toISOString(),
-      M20: date20.toISOString(),
-      CanhBao30: f30,
-      CanhBao20: f20,
-      ThoiGian: new Date().toLocaleString("vi-VN")
-   };
+  const record = {
+  id: Date.now() + Math.random(),
+  TenSP: productName.value.trim() || "",
+  Barcode: barcode.value.trim() || "",
+  NSX: nsxD.toISOString(),
+  HSD: hsdD.toISOString(),
+  M30: date30.toISOString(),
+  M20: date20.toISOString(),
+  status: "PENDING",
+  note: "",
+  ThoiGian: new Date().toLocaleString("vi-VN")
+};
 
    history.unshift(record);
 
@@ -717,7 +679,6 @@ function confirmDeleteHistory(){
   localStorage.removeItem(historyKey);
   renderHistory();
   closeConfirmPopup();
-  renderDashboard();
 }
 
 function closeConfirmPopup(){
@@ -761,155 +722,12 @@ function exportExcel(){
   showPopup("export");
 }
 
-autoClean90Days();
-renderDashboard();
+
 autoCleanExpired();   // THÊM DÒNG NÀY
 
 renderHistory();
 renderPrint();
 checkStoredProducts();
-/* ================= DASHBOARD MODULE ================= */
-
-function autoClean90Days(){
-
-  let data = JSON.parse(localStorage.getItem(historyKey) || "[]");
-  if(!data.length) return;
-
-  const now = new Date();
-
-  data = data.filter(item => {
-
-    if(!item.ThoiGian) return true;
-
-    // ThoiGian đang lưu dạng vi-VN -> cần parse lại
-    const parts = item.ThoiGian.split(" ");
-    if(!parts[0]) return true;
-
-    const [day, month, year] = parts[0].split("/");
-    const created = new Date(`${year}-${month}-${day}`);
-
-    if(isNaN(created)) return true;
-
-    const diff = (now - created) / 86400000;
-
-    return diff <= 90;
-  });
-
-  localStorage.setItem(historyKey, JSON.stringify(data));
-}
-
-function renderDashboard(){
-
-  const data = JSON.parse(localStorage.getItem(historyKey) || "[]");
-
-  if(!data.length){
-    dbTotal.innerText = 0;
-    db30.innerText = 0;
-    db20.innerText = 0;
-    dbProcessed.innerText = "0%";
-    dbStatus.innerText = "Chưa có dữ liệu";
-    dbTopSku.innerHTML = "";
-    return;
-  }
-
-  const today = new Date();
-  today.setHours(0,0,0,0);
-
-  let total = data.length;
-  let count30 = 0;
-  let count20 = 0;
-  let processed = 0;
-
-  data.forEach(item => {
-
-    if(item.completed) processed++;
-
-    const m30 = new Date(item.M30);
-    const m20 = new Date(item.M20);
-
-    if(today >= m30) count30++;
-    if(today >= m20) count20++;
-  });
-
-  const percentProcessed = Math.round((processed/total)*100);
-
-  dbTotal.innerText = total;
-  db30.innerText = count30;
-  db20.innerText = count20;
-  dbProcessed.innerText = percentProcessed + "%";
-
-  /* ==== PHÂN LOẠI QUẢN LÝ QUẦY ==== */
-
-  let statusText = "";
-  if(count20 > 0){
-    statusText = "CẢNH BÁO – Có SKU cần rút hàng";
-    dbStatus.className = "text-red-600 font-bold";
-  }
-  else if(count30 > 0){
-    statusText = "CẦN LƯU Ý – Có SKU giải tồn";
-    dbStatus.className = "text-orange-600 font-bold";
-  }
-  else{
-    statusText = "KIỂM SOÁT TỐT";
-    dbStatus.className = "text-green-700 font-bold";
-  }
-
-  dbStatus.innerText = statusText;
-
-  /* ==== TOP SKU CẬN DATE ==== */
-
-  /* ==== TOP SKU ĐÃ DÍNH MỐC 20% ==== */
-
-const today = new Date();
-today.setHours(0,0,0,0);
-
-const hit20 = data.filter(item => {
-
-  const m20 = new Date(item.M20);
-  if(isNaN(m20)) return false;
-
-  m20.setHours(0,0,0,0);
-
-  return today >= m20;
-});
-
-/* Sắp xếp theo HSD gần nhất */
-const sorted = hit20.sort((a,b)=>{
-  return new Date(a.HSD) - new Date(b.HSD);
-});
-
-const top5 = sorted.slice(0,5);
-
-
- if(!top5.length){
-  dbTopSku.innerHTML = `
-    <div class="text-green-700 text-sm">
-      Chưa có sản phẩm chạm mốc 20%
-    </div>
-  `;
-}else{
-  dbTopSku.innerHTML = top5.map(x=>{
-    return `
-      <div class="border p-2 rounded">
-        <div><b>${x.TenSP || "-"}</b></div>
-        <div class="text-xs text-gray-500">
-          HSD: ${new Date(x.HSD).toLocaleDateString("vi-VN")}
-        </div>
-      </div>
-    `;
-  }).join("");
-}
-
-    return `
-      <div class="border p-2 rounded">
-        <div><b>${x.TenSP || "-"}</b></div>
-        <div class="text-xs text-gray-500">
-          HSD: ${new Date(x.HSD).toLocaleDateString("vi-VN")}
-        </div>
-      </div>
-    `;
-  }).join("");
-}
 
 function addBarcode(code){
  let d=JSON.parse(localStorage.getItem(printKey)||"{}");
@@ -1000,52 +818,54 @@ function resetForm(){
   result.innerHTML="";
 }
 function checkStoredProducts(){
-if(isPopupShowing) return;
- let data = JSON.parse(localStorage.getItem(historyKey) || "[]");
 
- if(!Array.isArray(data) || !data.length){
-   closeCheckDatePopup();
-   return;
- }
+  if(isPopupShowing) return;
 
- const today = new Date();
- today.setHours(0,0,0,0);
+  let data = JSON.parse(localStorage.getItem(historyKey) || "[]");
 
- function parseVNDate(dateStr){
-   if(!dateStr) return null;
-   if(dateStr.includes("-")) return new Date(dateStr);
-   const [d,m,y] = dateStr.split("/");
-   return new Date(`${y}-${m}-${d}`);
- }
+  if(!Array.isArray(data) || !data.length){
+    closeCheckDatePopup();
+    return;
+  }
 
- let warningProducts = [];
+  const today = new Date();
+  today.setHours(0,0,0,0);
 
- data.forEach(item => {
+  let groupSap30 = [];
+  let groupDang30 = [];
 
-   if(item.completed === true) return;
+  data.forEach(item => {
 
-   const m30 = new Date(item.M30);
-   if(!m30 || isNaN(m30)) return;
+    if(item.status === "DONE") return;
 
-   m30.setHours(0,0,0,0);
+    const m30 = new Date(item.M30);
+    const m20 = new Date(item.M20);
 
-   const before15 = new Date(m30);
-   before15.setDate(before15.getDate() - 15);
+    if(isNaN(m30) || isNaN(m20)) return;
 
-   const after10 = new Date(m30);
-   after10.setDate(after10.getDate() + 10);
+    m30.setHours(0,0,0,0);
+    m20.setHours(0,0,0,0);
 
-   if(today >= before15 && today <= after10){
-     warningProducts.push(item);
-   }
+    const before15 = new Date(m30);
+    before15.setDate(before15.getDate() - 15);
 
- });
+    // SẮP 30%
+    if(today >= before15 && today < m30){
+      groupSap30.push(item);
+    }
 
- if(warningProducts.length){
-   showCheckDatePopup(warningProducts);
- } else {
-   closeCheckDatePopup();
- }
+    // ĐANG 30%
+    if(today >= m30 && today < m20){
+      groupDang30.push(item);
+    }
+
+  });
+
+  if(groupSap30.length || groupDang30.length){
+    showCheckDatePopupV2(groupSap30, groupDang30);
+  } else {
+    closeCheckDatePopup();
+  }
 }
 
 
@@ -1084,56 +904,120 @@ inner.classList.add("checkdate-pulse");
  box.classList.remove("hidden");
  box.classList.add("flex");
 }
+function showCheckDatePopupV2(sap30, dang30){
 
+  isPopupShowing = true;
 
+  const box = document.getElementById("checkDateBox");
+  const container = document.getElementById("checkDateList");
 
-function completeProduct(id){
+  container.innerHTML = `
+    ${renderGroup("SẮP 30% (≤15 ngày)", sap30, "orange")}
+    ${renderGroup("ĐANG 30%", dang30, "red")}
+  `;
+
+  box.classList.remove("hidden");
+  box.classList.add("flex");
+}
+function renderGroup(title, list, color){
+
+  if(!list.length) return "";
+
+  return `
+    <div class="mb-4">
+      <div class="font-bold mb-2 ${color==="red"?"text-red-600":"text-orange-600"}">
+        ${title}
+      </div>
+
+      ${list.map(item => {
+
+        const m30 = new Date(item.M30).toLocaleDateString("vi-VN");
+
+        return `
+        <div class="border p-3 rounded mb-2 bg-white">
+          <div><b>${item.TenSP || "-"}</b></div>
+          <div class="text-sm">Ngưỡng 30%: ${m30}</div>
+
+          <textarea 
+            id="note-${item.id}"
+            class="border p-1 rounded w-full mt-2 text-sm"
+            placeholder="Nhập ghi chú xử lý...">${item.note || ""}</textarea>
+
+          <div class="flex gap-2 mt-2">
+
+            <button onclick="markGiaiTon(${item.id})"
+              class="bg-orange-500 text-white px-2 py-1 rounded text-sm">
+              Giải tồn
+            </button>
+
+            <button onclick="completeProductV2(${item.id})"
+              class="bg-green-600 text-white px-2 py-1 rounded text-sm">
+              Hoàn tất
+            </button>
+
+          </div>
+        </div>
+        `;
+      }).join("")}
+    </div>
+  `;
+}
+function markGiaiTon(id){
 
   let data = JSON.parse(localStorage.getItem(historyKey) || "[]");
 
-  // Đánh dấu hoàn thành
   data = data.map(item => {
+
     if(item.id === id){
-      return { ...item, completed: true };
+
+      const noteInput = document.getElementById("note-"+id);
+      const noteValue = noteInput ? noteInput.value.trim() : "";
+
+      return {
+        ...item,
+        status: "GIATON",
+        note: noteValue
+      };
     }
+
     return item;
   });
 
   localStorage.setItem(historyKey, JSON.stringify(data));
 
-  // Lọc lại danh sách cảnh báo từ dữ liệu mới
-  const today = new Date();
-  today.setHours(0,0,0,0);
+  renderHistory();
+  checkStoredProducts();
+  showToast("Đã ghi nhận Giải tồn");
+}
 
-  const warningProducts = data.filter(item => {
 
-    if(item.completed) return false;
+function completeProductV2(id){
 
-    const m30 = new Date(item.M30);
-    if(isNaN(m30)) return false;
+  let data = JSON.parse(localStorage.getItem(historyKey) || "[]");
 
-    m30.setHours(0,0,0,0);
+  data = data.map(item => {
 
-    const before15 = new Date(m30);
-    before15.setDate(before15.getDate() - 15);
+    if(item.id === id){
 
-    const after10 = new Date(m30);
-    after10.setDate(after10.getDate() + 10);
+      const noteInput = document.getElementById("note-"+id);
+      const noteValue = noteInput ? noteInput.value.trim() : "";
 
-    return today >= before15 && today <= after10;
+      return {
+        ...item,
+        status: "DONE",
+        note: noteValue,
+        completed: true
+      };
+    }
+
+    return item;
   });
 
-  // Render lại popup đúng dữ liệu mới
-  if(warningProducts.length > 0){
-    showCheckDatePopup(warningProducts);
-  } else {
-    closeCheckDatePopup();
-  }
+  localStorage.setItem(historyKey, JSON.stringify(data));
 
- autoCleanExpired();
-renderHistory();
-showToast("Đã xử lý sản phẩm");
-renderDashboard();
+  renderHistory();
+  checkStoredProducts();
+  showToast("Đã hoàn tất xử lý");
 }
 
 function closeCheckDatePopup(){
