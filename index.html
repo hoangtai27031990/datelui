@@ -151,6 +151,26 @@ body{background:#f3f4f6}
   opacity: 1;
   transform: translateY(0);
 }
+.tool-box{
+display:none;
+}
+
+.tool-box.active{
+display:block;
+}
+.tool-btn{
+padding:10px;
+border-radius:8px;
+background:#f1f5f9;
+border:1px solid #e2e8f0;
+font-weight:500;
+text-align:left;
+transition:.2s;
+}
+
+.tool-btn:hover{
+background:#e2e8f0;
+}  
 </style>
 </head>
 
@@ -197,6 +217,7 @@ body{background:#f3f4f6}
   <div class="p-3 space-y-2">
     <button onclick="showMain()" class="w-full text-left px-3 py-2 rounded bg-red-50">📦 Quản lý HSD</button>
     <button onclick="showPrint()" class="w-full text-left px-3 py-2 rounded bg-slate-100">🖨 In bảng giá quầy</button>
+    <button onclick="showTool()" class="w-full text-left px-3 py-2 rounded bg-slate-100">📊 Tra cứu nghiệp vụ</button>
   </div>
 </div>
 <div id="overlay" onclick="toggleMenu()"></div>
@@ -303,7 +324,141 @@ body{background:#f3f4f6}
 <div id="printReader" class="hidden"></div>
 <div class="chat-box" id="printHistory"></div>
 </div>
+<!-- ================= TOOL APP ================= -->
+<div id="toolApp" class="hidden space-y-4">
 
+<div class="card p-4">
+
+<h2 class="font-bold brand-text mb-3">Tra cứu nghiệp vụ</h2>
+
+<div id="toolMenu" class="grid grid-cols-1 gap-2">
+
+<button onclick="openTool('profit')" class="tool-btn">
+📈 Tính tỉ lệ lãi
+</button>
+
+<button onclick="openTool('product')" class="tool-btn">
+🧮 Tính giá sản phẩm
+</button>
+
+<button onclick="openTool('keep')" class="tool-btn">
+🔄 Tính số lượng bán ra để giữ nguyên tỉ lệ lãi
+</button>
+
+<button onclick="openTool('inventory')" class="tool-btn">
+📦 Vòng quay tồn kho
+</button>
+
+</div>
+</div>
+
+<!-- TOOL PROFIT -->
+<div id="toolProfit" class="tool-box card p-4 space-y-2">
+
+<button onclick="backTool()" class="text-sm text-blue-600">← Quay lại</button>
+
+<h3 class="font-bold">Tính tỉ lệ lãi</h3>
+
+<input id="toolCost" placeholder="Giá vốn (VD: 8.000)" class="border p-2 rounded w-full" oninput="formatMoneyInput(this)">
+
+<input id="toolPrice" placeholder="Giá bán (VD: 11.000)" class="border p-2 rounded w-full" oninput="formatMoneyInput(this)">
+  
+<select id="toolVat" class="border p-2 rounded w-full">
+<option value="0">VAT 0%</option>
+<option value="5">VAT 5%</option>
+<option value="8">VAT 8%</option>
+<option value="10">VAT 10%</option>
+</select>
+
+<button onclick="calcProfit()" class="brand-bg text-white py-2 rounded w-full">TÍNH</button>
+<button onclick="resetProfit()" class="bg-gray-500 text-white py-2 rounded w-full">TÍNH LẠI</button>
+
+<div id="profitResult"></div>
+
+</div>
+
+<!-- TOOL PRODUCT -->
+<div id="toolProduct" class="tool-box card p-4 space-y-2">
+
+<button onclick="backTool()" class="text-sm text-blue-600">← Quay lại</button>
+
+<h3 class="font-bold">Tính giá sản phẩm</h3>
+
+<input id="toolProfit2" placeholder="% tỉ lệ lãi của sản phẩm" class="border p-2 rounded w-full">
+
+<select id="toolMode2" class="border p-2 rounded w-full">
+<option value="cost">Nhập giá vốn → tính giá bán</option>
+<option value="price">Nhập giá bán → tính giá vốn</option>
+</select>
+
+<input id="toolValue2" placeholder="Nhập giá" class="border p-2 rounded w-full" oninput="formatMoneyInput(this)">
+
+<select id="toolVat2" class="border p-2 rounded w-full">
+<option value="0">VAT 0%</option>
+<option value="5">VAT 5%</option>
+<option value="8">VAT 8%</option>
+<option value="10">VAT 10%</option>
+</select>
+
+<button onclick="calcProduct()" class="brand-bg text-white py-2 rounded w-full">TÍNH</button>
+<button onclick="resetProduct()" class="bg-gray-500 text-white py-2 rounded w-full">TÍNH LẠI</button>
+
+<div id="productResult"></div>
+
+</div>
+<!-- TOOL KEEP -->
+<div id="toolKeep" class="tool-box card p-4 space-y-2">
+
+<button onclick="backTool()" class="text-sm text-blue-600">← Quay lại</button>
+
+<h3 class="font-bold">Tính số lượng sản phẩm cần bán ra khi giảm giá để giữ nguyên tỉ lệ lãi</h3>
+
+<input id="keepPrice" placeholder="Giá bán hiện tại" class="border p-2 rounded w-full" oninput="formatMoneyInput(this)">
+
+<select id="keepVat" class="border p-2 rounded w-full">
+<option value="0">VAT 0%</option>
+<option value="5">VAT 5%</option>
+<option value="8">VAT 8%</option>
+<option value="10">VAT 10%</option>
+</select>
+
+<input id="keepProfit" placeholder="% lãi hiện tại" class="border p-2 rounded w-full">
+
+<input id="keepQty" placeholder="Số lượng bán hiện tại" class="border p-2 rounded w-full">
+
+<input id="keepDiscount" placeholder="Giảm giá %" class="border p-2 rounded w-full">
+
+<button onclick="calcKeep()" class="brand-bg text-white py-2 rounded w-full">TÍNH</button>
+<button onclick="resetKeep()" class="bg-gray-500 text-white py-2 rounded w-full">TÍNH LẠI</button>
+
+<div id="keepResult"></div>
+
+</div>
+
+<!-- TOOL INVENTORY -->
+<div id="toolInventory" class="tool-box card p-4 space-y-2">
+
+<button onclick="backTool()" class="text-sm text-blue-600">← Quay lại</button>
+
+<h3 class="font-bold">Vòng quay tồn kho</h3>
+
+<input id="invSales" placeholder="Giá vốn hàng bán" class="border p-2 rounded w-full" oninput="formatMoneyInput(this)">
+
+<input id="invStock" placeholder="Tồn kho bình quân" class="border p-2 rounded w-full" oninput="formatMoneyInput(this)">
+
+<select id="invPeriod" class="border p-2 rounded w-full">
+<option value="month">Theo tháng</option>
+<option value="year">Theo năm</option>
+</select>
+
+<button onclick="calcInventory()" class="brand-bg text-white py-2 rounded w-full">TÍNH</button>
+<button onclick="resetInventory()" class="bg-gray-500 text-white py-2 rounded w-full">TÍNH LẠI</button>
+
+<div id="inventoryResult"></div>
+
+</div>
+
+</div>
 <script>
   function isIOS(){
   return /iPhone|iPad|iPod/i.test(navigator.userAgent);
@@ -348,6 +503,7 @@ const sidebar=document.getElementById("sidebar");
 const overlay=document.getElementById("overlay");
 const mainApp=document.getElementById("mainApp");
 const printApp=document.getElementById("printApp");
+const toolApp=document.getElementById("toolApp");
 
 function toggleMenu(){sidebar.classList.toggle("active");overlay.classList.toggle("active")}
 function stopAllScanner(){
@@ -366,6 +522,7 @@ function showMain(){
   stopAllScanner();
   mainApp.classList.remove("hidden");
   printApp.classList.add("hidden");
+  toolApp.classList.add("hidden");   // thêm dòng này
   toggleMenu();
 }
 
@@ -373,31 +530,37 @@ function showPrint(){
   stopAllScanner();
   mainApp.classList.add("hidden");
   printApp.classList.remove("hidden");
+  toolApp.classList.add("hidden");   // thêm dòng này
   toggleMenu();
 }
+function showTool(){
+  stopAllScanner();
 
-function changeCalcMode(){
-  const m = calcMode.value;
+  mainApp.classList.add("hidden");
+  printApp.classList.add("hidden");
+  toolApp.classList.remove("hidden");
 
-  nsxBlock.classList.add("hidden");
-  hsdBlock.classList.add("hidden");
-  beforeHsdBlock.classList.add("hidden");
-  nsxPeriodBlock.classList.add("hidden");
+  backTool();   // reset tool
 
-  if(m === "full"){
-    nsxBlock.classList.remove("hidden");
-    hsdBlock.classList.remove("hidden");
-  }
+  toggleMenu();
+}
+/* ===== FORMAT MONEY ===== */
+function money(n){
+return Number(n).toLocaleString("vi-VN");
+}
 
-  if(m === "hsdBack"){
-    hsdBlock.classList.remove("hidden");
-    beforeHsdBlock.classList.remove("hidden");
-  }
+function num(v){
+return Number(String(v).replace(/[.,]/g,""));
+}
+/* ===== AUTO FORMAT MONEY INPUT ===== */
+function formatMoneyInput(el){
 
-  if(m === "nsxPeriod"){
-    nsxBlock.classList.remove("hidden");
-    nsxPeriodBlock.classList.remove("hidden");
-  }
+  el.value = el.value.replace(/[^\d]/g,'');
+
+  if(!el.value) return;
+
+  el.value = Number(el.value).toLocaleString("vi-VN");
+
 }
 
 /* ================= SCAN CONFIG ================= */
@@ -519,7 +682,37 @@ function addPeriod(date, value, unit){
 
   return d;
 }
+function changeCalcMode(){
 
+  const mode = document.getElementById("calcMode").value;
+
+  const nsxBlock = document.getElementById("nsxBlock");
+  const hsdBlock = document.getElementById("hsdBlock");
+  const beforeHsdBlock = document.getElementById("beforeHsdBlock");
+  const nsxPeriodBlock = document.getElementById("nsxPeriodBlock");
+
+  // reset
+  nsxBlock.classList.add("hidden");
+  hsdBlock.classList.add("hidden");
+  beforeHsdBlock.classList.add("hidden");
+  nsxPeriodBlock.classList.add("hidden");
+
+  if(mode === "full"){
+    nsxBlock.classList.remove("hidden");
+    hsdBlock.classList.remove("hidden");
+  }
+
+  if(mode === "hsdBack"){
+    hsdBlock.classList.remove("hidden");
+    beforeHsdBlock.classList.remove("hidden");
+  }
+
+  if(mode === "nsxPeriod"){
+    nsxBlock.classList.remove("hidden");
+    nsxPeriodBlock.classList.remove("hidden");
+  }
+
+}
 function calculate(){
 let nsxD, hsdD;
 const mode = calcMode.value;
@@ -594,18 +787,18 @@ function saveHistory(nsxD, hsdD, date30, date20, f30, f20){
 
    const history = JSON.parse(localStorage.getItem(historyKey)) || [];
 
-  const record = {
-  id: Date.now() + Math.random(),
-  TenSP: productName.value.trim() || "",
-  Barcode: barcode.value.trim() || "",
-  NSX: nsxD.toISOString(),
-  HSD: hsdD.toISOString(),
-  M30: date30.toISOString(),
-  M20: date20.toISOString(),
-  status: "PENDING",
-  note: "",
-  ThoiGian: new Date().toLocaleString("vi-VN")
-};
+   const record = {
+      id: Date.now() + Math.random(),
+      TenSP: productName.value.trim() || "",
+      Barcode: barcode.value.trim() || "",
+      NSX: nsxD.toISOString(),
+      HSD: hsdD.toISOString(),
+      M30: date30.toISOString(),
+      M20: date20.toISOString(),
+      CanhBao30: f30,
+      CanhBao20: f20,
+      ThoiGian: new Date().toLocaleString("vi-VN")
+   };
 
    history.unshift(record);
 
@@ -728,7 +921,10 @@ autoCleanExpired();   // THÊM DÒNG NÀY
 renderHistory();
 renderPrint();
 checkStoredProducts();
-
+formatMoneyInput(toolCost);
+formatMoneyInput(toolPrice);
+formatMoneyInput(toolValue);
+formatMoneyInput(keepPrice);
 function addBarcode(code){
  let d=JSON.parse(localStorage.getItem(printKey)||"{}");
  d[code]=(d[code]||0)+1;
@@ -759,7 +955,28 @@ function exportText(){
  renderPrint();
  showPopup("export");
 }
+function openTool(type){
 
+document.getElementById("toolMenu").style.display="none";
+
+document.querySelectorAll(".tool-box").forEach(e=>{
+e.classList.remove("active");
+});
+
+const map={
+profit:"toolProfit",
+product:"toolProduct",
+keep:"toolKeep",
+inventory:"toolInventory"
+};
+
+const target=document.getElementById(map[type]);
+
+if(target){
+target.classList.add("active");
+}
+
+}
 function showPopup(type){
 
  if(isPopupShowing) return; // chặn mở chồng
@@ -806,7 +1023,19 @@ function closePopup(){
  popup.classList.remove("flex");
  isPopupShowing = false;
 }
+function formatMoneyInput(el){
+  let v = el.value.replace(/,/g,"").replace(/\D/g,"");
+  if(!v) {
+    el.value="";
+    return;
+  }
+  el.value = Number(v).toLocaleString("vi-VN");
+}
 
+function getMoneyValue(id){
+  const v = document.getElementById(id).value.replace(/,/g,"");
+  return Number(v) || 0;
+}
   
 function resetForm(){
   productName.value="";
@@ -818,54 +1047,52 @@ function resetForm(){
   result.innerHTML="";
 }
 function checkStoredProducts(){
+if(isPopupShowing) return;
+ let data = JSON.parse(localStorage.getItem(historyKey) || "[]");
 
-  if(isPopupShowing) return;
+ if(!Array.isArray(data) || !data.length){
+   closeCheckDatePopup();
+   return;
+ }
 
-  let data = JSON.parse(localStorage.getItem(historyKey) || "[]");
+ const today = new Date();
+ today.setHours(0,0,0,0);
 
-  if(!Array.isArray(data) || !data.length){
-    closeCheckDatePopup();
-    return;
-  }
+ function parseVNDate(dateStr){
+   if(!dateStr) return null;
+   if(dateStr.includes("-")) return new Date(dateStr);
+   const [d,m,y] = dateStr.split("/");
+   return new Date(`${y}-${m}-${d}`);
+ }
 
-  const today = new Date();
-  today.setHours(0,0,0,0);
+ let warningProducts = [];
 
-  let groupSap30 = [];
-  let groupDang30 = [];
+ data.forEach(item => {
 
-  data.forEach(item => {
+   if(item.completed === true) return;
 
-    if(item.status === "DONE") return;
+   const m30 = new Date(item.M30);
+   if(!m30 || isNaN(m30)) return;
 
-    const m30 = new Date(item.M30);
-    const m20 = new Date(item.M20);
+   m30.setHours(0,0,0,0);
 
-    if(isNaN(m30) || isNaN(m20)) return;
+   const before15 = new Date(m30);
+   before15.setDate(before15.getDate() - 15);
 
-    m30.setHours(0,0,0,0);
-    m20.setHours(0,0,0,0);
+   const after10 = new Date(m30);
+   after10.setDate(after10.getDate() + 10);
 
-    const before15 = new Date(m30);
-    before15.setDate(before15.getDate() - 15);
+   if(today >= before15 && today <= after10){
+     warningProducts.push(item);
+   }
 
-    // SẮP 30%
-    if(today >= before15 && today < m30){
-      groupSap30.push(item);
-    }
+ });
 
-    // ĐANG 30%
-    if(today >= m30 && today < m20){
-      groupDang30.push(item);
-    }
-
-  });
-
-  if(groupSap30.length || groupDang30.length){
-    showCheckDatePopupV2(groupSap30, groupDang30);
-  } else {
-    closeCheckDatePopup();
-  }
+ if(warningProducts.length){
+   showCheckDatePopup(warningProducts);
+ } else {
+   closeCheckDatePopup();
+ }
 }
 
 
@@ -904,120 +1131,55 @@ inner.classList.add("checkdate-pulse");
  box.classList.remove("hidden");
  box.classList.add("flex");
 }
-function showCheckDatePopupV2(sap30, dang30){
 
-  isPopupShowing = true;
 
-  const box = document.getElementById("checkDateBox");
-  const container = document.getElementById("checkDateList");
 
-  container.innerHTML = `
-    ${renderGroup("SẮP 30% (≤15 ngày)", sap30, "orange")}
-    ${renderGroup("ĐANG 30%", dang30, "red")}
-  `;
-
-  box.classList.remove("hidden");
-  box.classList.add("flex");
-}
-function renderGroup(title, list, color){
-
-  if(!list.length) return "";
-
-  return `
-    <div class="mb-4">
-      <div class="font-bold mb-2 ${color==="red"?"text-red-600":"text-orange-600"}">
-        ${title}
-      </div>
-
-      ${list.map(item => {
-
-        const m30 = new Date(item.M30).toLocaleDateString("vi-VN");
-
-        return `
-        <div class="border p-3 rounded mb-2 bg-white">
-          <div><b>${item.TenSP || "-"}</b></div>
-          <div class="text-sm">Ngưỡng 30%: ${m30}</div>
-
-          <textarea 
-            id="note-${item.id}"
-            class="border p-1 rounded w-full mt-2 text-sm"
-            placeholder="Nhập ghi chú xử lý...">${item.note || ""}</textarea>
-
-          <div class="flex gap-2 mt-2">
-
-            <button onclick="markGiaiTon(${item.id})"
-              class="bg-orange-500 text-white px-2 py-1 rounded text-sm">
-              Giải tồn
-            </button>
-
-            <button onclick="completeProductV2(${item.id})"
-              class="bg-green-600 text-white px-2 py-1 rounded text-sm">
-              Hoàn tất
-            </button>
-
-          </div>
-        </div>
-        `;
-      }).join("")}
-    </div>
-  `;
-}
-function markGiaiTon(id){
+function completeProduct(id){
 
   let data = JSON.parse(localStorage.getItem(historyKey) || "[]");
 
+  // Đánh dấu hoàn thành
   data = data.map(item => {
-
     if(item.id === id){
-
-      const noteInput = document.getElementById("note-"+id);
-      const noteValue = noteInput ? noteInput.value.trim() : "";
-
-      return {
-        ...item,
-        status: "GIATON",
-        note: noteValue
-      };
+      return { ...item, completed: true };
     }
-
     return item;
   });
 
   localStorage.setItem(historyKey, JSON.stringify(data));
 
-  renderHistory();
-  checkStoredProducts();
-  showToast("Đã ghi nhận Giải tồn");
-}
+  // Lọc lại danh sách cảnh báo từ dữ liệu mới
+  const today = new Date();
+  today.setHours(0,0,0,0);
 
+  const warningProducts = data.filter(item => {
 
-function completeProductV2(id){
+    if(item.completed) return false;
 
-  let data = JSON.parse(localStorage.getItem(historyKey) || "[]");
+    const m30 = new Date(item.M30);
+    if(isNaN(m30)) return false;
 
-  data = data.map(item => {
+    m30.setHours(0,0,0,0);
 
-    if(item.id === id){
+    const before15 = new Date(m30);
+    before15.setDate(before15.getDate() - 15);
 
-      const noteInput = document.getElementById("note-"+id);
-      const noteValue = noteInput ? noteInput.value.trim() : "";
+    const after10 = new Date(m30);
+    after10.setDate(after10.getDate() + 10);
 
-      return {
-        ...item,
-        status: "DONE",
-        note: noteValue,
-        completed: true
-      };
-    }
-
-    return item;
+    return today >= before15 && today <= after10;
   });
 
-  localStorage.setItem(historyKey, JSON.stringify(data));
+  // Render lại popup đúng dữ liệu mới
+  if(warningProducts.length > 0){
+    showCheckDatePopup(warningProducts);
+  } else {
+    closeCheckDatePopup();
+  }
 
-  renderHistory();
-  checkStoredProducts();
-  showToast("Đã hoàn tất xử lý");
+ autoCleanExpired();
+renderHistory();
+showToast("Đã xử lý sản phẩm");
 }
 
 function closeCheckDatePopup(){
@@ -1041,6 +1203,372 @@ function showToast(message = "Đã xử lý"){
     toast.classList.remove("show");
   }, 2500);
 }
+/* ================= TOOL DATA ================= */
+
+const toolTemplates = {
+
+profit:`
+<div class="card p-4 space-y-2">
+
+<label>Giá vốn</label>
+<input id="cost" type="number" class="border p-2 rounded w-full">
+
+<label>Giá bán</label>
+<input id="price" type="number" class="border p-2 rounded w-full">
+
+<label>VAT</label>
+<select id="vat" class="border p-2 rounded w-full">
+<option value="0">0%</option>
+<option value="5">5%</option>
+<option value="8">8%</option>
+<option value="10">10%</option>
+</select>
+
+<button onclick="calcProfit()" class="brand-bg text-white py-2 rounded w-full mt-2">
+TÍNH
+</button>
+
+<div id="toolResult" class="mt-3 font-semibold"></div>
+
+</div>
+`,
+
+product:`
+<div class="card p-4 space-y-2">
+
+<label>Tỉ lệ lãi (%)</label>
+<input id="margin" type="number" class="border p-2 rounded w-full">
+
+<label>Giá vốn</label>
+<input id="cost" type="number" class="border p-2 rounded w-full">
+
+<button onclick="calcProduct()" class="brand-bg text-white py-2 rounded w-full mt-2">
+TÍNH
+</button>
+
+<div id="toolResult" class="mt-3 font-semibold"></div>
+
+</div>
+`,
+
+keep:`
+<div class="card p-4 space-y-2">
+
+<label>Giá bán hiện tại</label>
+<input id="price" type="number" class="border p-2 rounded w-full">
+
+<label>Số lượng bán</label>
+<input id="qty" type="number" class="border p-2 rounded w-full">
+
+<label>% Giảm giá</label>
+<input id="discount" type="number" class="border p-2 rounded w-full">
+
+<label>Tỉ lệ lãi (%)</label>
+<input id="margin" type="number" class="border p-2 rounded w-full">
+
+<button onclick="calcKeep()" class="brand-bg text-white py-2 rounded w-full mt-2">
+TÍNH
+</button>
+
+<div id="toolResult" class="mt-3 font-semibold"></div>
+
+</div>
+`,
+
+inventory:`
+<div class="card p-4 space-y-2">
+
+<label>Giá vốn hàng bán (COGS)</label>
+<input id="cogs" type="number" class="border p-2 rounded w-full">
+
+<label>Tồn kho bình quân</label>
+<input id="stock" type="number" class="border p-2 rounded w-full">
+
+<button onclick="calcInventory()" class="brand-bg text-white py-2 rounded w-full mt-2">
+TÍNH
+</button>
+
+<div id="toolResult" class="mt-3 font-semibold"></div>
+
+</div>
+`
+
+};
+
+
+/* ================= OPEN TOOL ================= */
+
+function openTool(type){
+
+document.getElementById("toolMenu").classList.add("hidden");
+document.getElementById("toolContainer").classList.remove("hidden");
+
+document.getElementById("toolContent").innerHTML = toolTemplates[type];
+
+}
+
+
+/* ================= BACK TOOL ================= */
+
+function backTool(){
+
+document.querySelectorAll(".tool-box").forEach(e=>{
+e.classList.remove("active");
+});
+
+document.getElementById("toolMenu").style.display="grid";
+
+}
+
+/* ================= CALC ================= */
+
+function calcProfit(){
+
+const cost=Number(document.getElementById("cost").value);
+const price=Number(document.getElementById("price").value);
+const vat=Number(document.getElementById("vat").value)/100;
+
+const realPrice=price/(1+vat);
+const margin=((realPrice-cost)/realPrice)*100;
+
+toolResult.innerHTML=`Tỉ lệ lãi: ${margin.toFixed(2)}%`;
+
+}
+
+
+function calcProduct(){
+
+const margin=Number(document.getElementById("margin").value)/100;
+const cost=Number(document.getElementById("cost").value);
+
+const price=cost/(1-margin);
+
+toolResult.innerHTML=`Giá bán đề xuất: ${price.toFixed(0)}`;
+
+}
+
+
+function calcKeep(){
+
+const price=Number(document.getElementById("price").value);
+const qty=Number(document.getElementById("qty").value);
+const discount=Number(document.getElementById("discount").value)/100;
+const margin=Number(document.getElementById("margin").value)/100;
+
+const newPrice=price*(1-discount);
+
+const revenue=price*qty;
+const targetProfit=revenue*margin;
+
+const newQty=Math.ceil(targetProfit/(newPrice*margin));
+
+toolResult.innerHTML=`Cần bán: ${newQty} sản phẩm`;
+
+}
+
+
+function calcInventory(){
+
+const cogs=Number(document.getElementById("cogs").value);
+const stock=Number(document.getElementById("stock").value);
+
+const turn=cogs/stock;
+
+toolResult.innerHTML=`Vòng quay tồn kho: ${turn.toFixed(2)} vòng`;
+
+}
+
+function formatMoneyInput(input){
+
+  input.addEventListener("input", function(){
+
+    let v = this.value.replace(/\D/g,"");
+
+    if(!v){
+      this.value="";
+      return;
+    }
+
+    this.value = Number(v).toLocaleString("vi-VN");
+  });
+
+}
+/* ================= TOOL APP ================= */
+
+function openTool(name){
+
+toolMenu.style.display="none";
+
+document.querySelectorAll(".tool-box")
+.forEach(e=>e.classList.remove("active"));
+
+document.getElementById("tool"+name.charAt(0).toUpperCase()+name.slice(1))
+.classList.add("active");
+
+}
+
+function backTool(){
+toolMenu.style.display="grid";
+document.querySelectorAll(".tool-box")
+.forEach(e=>e.classList.remove("active"));
+}
+
+/* ===== TỈ LỆ LÃI ===== */
+function calcProfit(){
+
+const cost=num(toolCost.value);
+const price=num(toolPrice.value);
+const vat=Number(toolVat.value);
+
+if(!cost||!price) return alert("Nhập dữ liệu");
+
+const priceNoVat=price/(1+vat/100);
+
+const profit=((priceNoVat-cost)/priceNoVat)*100;
+
+profitResult.innerHTML=
+`<b>Tỉ lệ lãi:</b> ${profit.toFixed(2)} %`;
+
+}
+
+/* ===== GIÁ SẢN PHẨM ===== */
+function calcProduct(){
+
+const profit=Number(toolProfit2.value);
+const vat=Number(toolVat2.value);
+const mode=toolMode2.value;
+const val=num(toolValue2.value);
+
+if(!profit||!val) return alert("Nhập dữ liệu");
+
+if(mode==="cost"){
+
+let price=val/(1-profit/100);
+price=price*(1+vat/100);
+
+productResult.innerHTML=
+`Giá bán: <b>${money(price)} đ</b>`;
+
+}else{
+
+let priceNoVat=val/(1+vat/100);
+let cost=priceNoVat*(1-profit/100);
+
+productResult.innerHTML=
+`Giá vốn: <b>${money(cost)} đ</b>`;
+
+}
+
+}
+
+/* ===== GIỮ NGUYÊN LÃI ===== */
+function calcKeep(){
+
+const price=num(keepPrice.value);
+const vat=Number(keepVat.value);
+const profit=Number(keepProfit.value)/100;
+const qty=Number(keepQty.value);
+const discount=Number(keepDiscount.value)/100;
+
+if(!price||!profit||!qty) return alert("Nhập dữ liệu");
+
+const priceAfter=price*(1-discount);
+
+const needQty=qty*(price/priceAfter);
+
+keepResult.innerHTML=
+`
+Giá sau giảm: <b>${money(priceAfter)} đ</b><br>
+Cần bán: <b>${Math.ceil(needQty)}</b> sản phẩm
+`;
+
+}
+
+/* ===== VÒNG QUAY ===== */
+function calcInventory(){
+
+const sales=num(invSales.value);
+const stock=num(invStock.value);
+const period=invPeriod.value;
+
+if(!sales||!stock) return alert("Nhập dữ liệu");
+
+const turn=sales/stock;
+
+let explain="";
+
+if(period==="month")
+explain=`~ ${ (30/turn).toFixed(1) } ngày / vòng`;
+
+if(period==="year")
+explain=`~ ${ (365/turn).toFixed(1) } ngày / vòng`;
+
+inventoryResult.innerHTML=
+`
+Vòng quay: <b>${turn.toFixed(2)}</b><br>
+${explain}
+`;
+
+}
+/* ================= RESET TOOL ================= */
+
+function resetProfit(){
+toolCost.value="";
+toolPrice.value="";
+profitResult.innerHTML="";
+}
+
+function resetProduct(){
+toolProfit2.value="";
+toolValue2.value="";
+productResult.innerHTML="";
+}
+
+function resetKeep(){
+keepPrice.value="";
+keepProfit.value="";
+keepQty.value="";
+keepDiscount.value="";
+keepResult.innerHTML="";
+}
+
+function resetInventory(){
+invSales.value="";
+invStock.value="";
+inventoryResult.innerHTML="";
+}
+  /* ================= AUTO FORMAT MONEY ================= */
+
+function formatInputMoney(el){
+
+let v = el.value.replace(/,/g,"");
+
+if(v === "") return;
+
+if(!isNaN(v)){
+el.value = Number(v).toLocaleString("vi-VN");
+}
+
+}
+
+/* áp dụng cho tất cả input giá */
+
+[
+"toolCost",
+"toolPrice",
+"toolValue2",
+"keepPrice",
+"invSales",
+"invStock"
+].forEach(id=>{
+const el = document.getElementById(id);
+if(el){
+el.addEventListener("blur",()=>formatInputMoney(el));
+}
+});
+changeCalcMode();
+autoCleanExpired();
+renderHistory();
 </script>
 <div id="confirmBox"
      class="fixed inset-0 hidden items-center justify-center bg-black bg-opacity-50 z-[2200]">
