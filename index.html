@@ -67,7 +67,7 @@ body{background:#f3f4f6}
 </style>
 </head>
 <body class="max-w-xl mx-auto p-3">
-
+ 
 <!-- POPUP CẢNH BÁO -->
 <div id="alertPopup" style="display:none" class="fixed inset-0 items-center justify-center bg-black bg-opacity-50 z-[2000]">
   <div id="popupBox" class="bg-white p-5 rounded-xl w-[90%] max-w-sm text-center">
@@ -76,7 +76,7 @@ body{background:#f3f4f6}
     <button onclick="closePopup()" class="brand-bg text-white px-4 py-2 rounded">Đã hiểu</button>
   </div>
 </div>
-
+ 
 <!-- POPUP KIỂM DATE -->
 <div id="checkDateBox" style="display:none" class="fixed inset-0 items-center justify-center bg-black bg-opacity-50 z-[2100]">
   <div id="checkDateInner" class="bg-white p-5 rounded-xl w-[95%] max-w-md text-center">
@@ -87,7 +87,7 @@ body{background:#f3f4f6}
     </div>
   </div>
 </div>
-
+ 
 <!-- PDF VIEWER FULLSCREEN -->
 <div id="pdfViewer" class="pdf-viewer-wrapper" style="display:none">
   <div class="pdf-viewer-header">
@@ -98,7 +98,7 @@ body{background:#f3f4f6}
     <iframe id="pdfFrame" src="" allowfullscreen></iframe>
   </div>
 </div>
-
+ 
 <!-- SIDEBAR -->
 <div id="sidebar">
   <div class="p-4 border-b text-center"><div class="font-bold brand-text">Saigon Co.op</div></div>
@@ -110,13 +110,13 @@ body{background:#f3f4f6}
   </div>
 </div>
 <div id="overlay" onclick="toggleMenu()"></div>
-
+ 
 <!-- HEADER -->
 <div class="flex justify-between items-center mb-4 p-3 rounded-lg brand-bg text-white">
   <div class="font-bold text-lg" id="headerTitle">HỆ THỐNG QUẢN LÝ HSD</div>
   <button onclick="toggleMenu()" class="text-2xl">☰</button>
 </div>
-
+ 
 <!-- ================= MAIN APP ================= -->
 <div id="mainApp">
 <div class="card p-4 space-y-3">
@@ -185,7 +185,7 @@ body{background:#f3f4f6}
   <div id="history" class="text-sm space-y-1 max-h-64 overflow-auto"></div>
 </div>
 </div>
-
+ 
 <!-- ================= PRINT APP ================= -->
 <div id="printApp" class="hidden card p-4">
   <h2 class="font-bold brand-text mb-3">In bảng giá quầy</h2>
@@ -197,7 +197,7 @@ body{background:#f3f4f6}
   <div id="printReader" class="hidden"></div>
   <div class="chat-box" id="printHistory"></div>
 </div>
-
+ 
 <!-- ================= TOOL APP ================= -->
 <div id="toolApp" class="hidden space-y-4">
 <div class="card p-4">
@@ -311,10 +311,10 @@ body{background:#f3f4f6}
   <div id="riskResult"></div>
 </div>
 </div>
-
+ 
 <!-- ================= TRAINING APP ================= -->
 <div id="trainingApp" class="hidden space-y-4">
-
+ 
   <!-- TRANG CHỌN VAI TRÒ -->
   <div id="trainRolePage">
     <div class="card p-4">
@@ -333,7 +333,7 @@ body{background:#f3f4f6}
       </div>
     </div>
   </div>
-
+ 
   <!-- TRANG LỘ TRÌNH CỬA HÀNG TRƯỞNG -->
   <div id="trainManagerPage" class="hidden space-y-4">
     <div class="card p-4">
@@ -359,9 +359,9 @@ body{background:#f3f4f6}
       <div id="trainModuleList" class="space-y-3"></div>
     </div>
   </div>
-
+ 
 </div>
-
+ 
 <!-- CONFIRM XÓA -->
 <div id="confirmBox" class="fixed inset-0 hidden items-center justify-center bg-black bg-opacity-50 z-[2200]">
   <div class="bg-white p-5 rounded-xl w-[90%] max-w-sm text-center">
@@ -374,14 +374,14 @@ body{background:#f3f4f6}
   </div>
 </div>
 <div id="toastBox" class="toast"></div>
-
+ 
 <script>
 /* ===== UTILS ===== */
 function isIOS(){ return /iPhone|iPad|iPod/i.test(navigator.userAgent); }
 function money(n){ const rounded=Math.round(Number(n)); return rounded.toLocaleString("vi-VN"); }
 function num(v){ return Number(String(v).replace(/\./g,"").replace(/,/g,".")) || 0; }
 function formatMoneyInput(el){ el.value=el.value.replace(/[^\d]/g,''); if(!el.value) return; el.value=Number(el.value).toLocaleString("vi-VN"); }
-
+ 
 /* ===== STATE ===== */
 const historyKey="coop_hsd_history";
 const printKey="coop_print_history";
@@ -389,7 +389,7 @@ const trainKey="coop_train_progress";
 let qr=null, qr2=null, currentFilter="all";
 let isScanning=false, isPopupShowing=false;
 const scanCfg={fps:10, qrbox:250};
-
+ 
 /* ===== DỮ LIỆU BÀI HỌC =====
    Để thêm bài mới: copy 1 object, đổi id/title/subtitle/pdf
    ================================================ */
@@ -405,12 +405,12 @@ const trainModules = [
   // { id: "thu-ngan-2", title: "Nghiệp vụ thu ngân", subtitle: "Phần 2 – Xử lý tình huống", icon: "🧾", pdf: "bai2.pdf" },
   // { id: "quan-ly-hang", title: "Quản lý hàng hóa", subtitle: "Kiểm kê & nhập xuất kho", icon: "📦", pdf: "bai3.pdf" }
 ];
-
+ 
 /* ===== TRAINING: LƯU / ĐỌC TIẾN TRÌNH ===== */
 function getTrainProgress(){ return JSON.parse(localStorage.getItem(trainKey)||"{}"); }
 function setTrainDone(moduleId){ const p=getTrainProgress(); if(!p[moduleId]) p[moduleId]={doneAt:new Date().toLocaleString("vi-VN")}; localStorage.setItem(trainKey,JSON.stringify(p)); }
 function isModuleDone(moduleId){ return !!getTrainProgress()[moduleId]; }
-
+ 
 /* ===== TRAINING: RENDER DANH SÁCH BÀI ===== */
 function renderTrainModules(){
   const list=document.getElementById("trainModuleList");
@@ -434,7 +434,7 @@ function renderTrainModules(){
     +'</div>';
   }).join("");
 }
-
+ 
 /* ===== TRAINING: MỞ FILE PDF ===== */
 function openModule(moduleId){
   const m=trainModules.find(function(x){return x.id===moduleId;});
@@ -450,7 +450,7 @@ function closePdfViewer(){
   document.getElementById("pdfViewer").style.display="none";
   document.getElementById("pdfFrame").src="";
 }
-
+ 
 /* ===== TRAINING: ĐIỀU HƯỚNG ===== */
 function showTrainRole(role){
   if(role==="staff"){ showToast("Nội dung đang được chuẩn bị, sắp ra mắt!"); return; }
@@ -462,7 +462,7 @@ function backToRolePage(){
   document.getElementById("trainManagerPage").classList.add("hidden");
   document.getElementById("trainRolePage").classList.remove("hidden");
 }
-
+ 
 /* ===== NAVIGATION ===== */
 function toggleMenu(){ document.getElementById("sidebar").classList.toggle("active"); document.getElementById("overlay").classList.toggle("active"); }
 function stopAllScanner(){ if(qr){ qr.stop().then(function(){qr.clear();}).catch(function(){}); qr=null; } if(qr2){ qr2.stop().then(function(){qr2.clear();}).catch(function(){}); qr2=null; } isScanning=false; }
@@ -470,14 +470,14 @@ function showMain(){ stopAllScanner(); document.getElementById("mainApp").classL
 function showPrint(){ stopAllScanner(); document.getElementById("mainApp").classList.add("hidden"); document.getElementById("printApp").classList.remove("hidden"); document.getElementById("toolApp").classList.add("hidden"); document.getElementById("trainingApp").classList.add("hidden"); document.getElementById("headerTitle").textContent="IN BẢNG GIÁ QUẦY"; toggleMenu(); }
 function showTool(){ stopAllScanner(); document.getElementById("mainApp").classList.add("hidden"); document.getElementById("printApp").classList.add("hidden"); document.getElementById("toolApp").classList.remove("hidden"); document.getElementById("trainingApp").classList.add("hidden"); document.getElementById("headerTitle").textContent="TRA CỨU NGHIỆP VỤ"; backTool(); toggleMenu(); }
 function showTraining(){ stopAllScanner(); document.getElementById("mainApp").classList.add("hidden"); document.getElementById("printApp").classList.add("hidden"); document.getElementById("toolApp").classList.add("hidden"); document.getElementById("trainingApp").classList.remove("hidden"); document.getElementById("headerTitle").textContent="ĐÀO TẠO THỰC HÀNH"; document.getElementById("trainRolePage").classList.remove("hidden"); document.getElementById("trainManagerPage").classList.add("hidden"); toggleMenu(); }
-
+ 
 /* ===== AUTO CLEAN ===== */
 function autoCleanExpired(){ let data=JSON.parse(localStorage.getItem(historyKey)||"[]"); if(!data.length) return; const today=new Date(); today.setHours(0,0,0,0); const filtered=data.filter(function(item){ if(!item.HSD) return true; const h=new Date(item.HSD); if(isNaN(h)) return true; h.setHours(0,0,0,0); return h>=today; }); if(filtered.length!==data.length) localStorage.setItem(historyKey,JSON.stringify(filtered)); }
-
+ 
 /* ===== SCAN ===== */
 async function startScan(){ if(isIOS()){ alert("⚠️ iPhone không hỗ trợ quét barcode.\nVui lòng nhập tay."); return; } if(isScanning) return; isScanning=true; if(qr){ try{ await qr.stop(); await qr.clear(); }catch(e){} qr=null; } const r=document.getElementById("reader"); r.innerHTML='<div class="scan-frame"><div class="scan-line"></div></div>'; r.classList.remove("hidden"); qr=new Html5Qrcode("reader"); qr.start({facingMode:"environment"},scanCfg,function(code){ barcode.value=code; qr.stop().then(function(){ qr.clear(); qr=null; r.classList.add("hidden"); isScanning=false; }); },function(){}).catch(function(){ isScanning=false; r.classList.add("hidden"); }); }
 async function startPrintScan(){ if(isIOS()){ alert("⚠️ Thiết bị iOS không hỗ trợ quét barcode."); return; } if(isScanning) return; isScanning=true; if(qr2){ try{ await qr2.stop(); await qr2.clear(); }catch(e){} qr2=null; } const r=document.getElementById("printReader"); r.innerHTML='<div class="scan-frame"><div class="scan-line"></div></div>'; r.classList.remove("hidden"); qr2=new Html5Qrcode("printReader"); qr2.start({facingMode:"environment"},scanCfg,function(code){ addBarcode(code); qr2.stop().then(function(){ qr2.clear(); qr2=null; r.classList.add("hidden"); isScanning=false; }); }).catch(function(){ isScanning=false; r.classList.add("hidden"); }); }
-
+ 
 /* ===== HSD CALCULATOR ===== */
 function addPeriod(date,value,unit){ const d=new Date(date); if(unit==="day") d.setDate(d.getDate()+value); if(unit==="month"){ const dy=d.getDate(); d.setMonth(d.getMonth()+value); if(d.getDate()<dy) d.setDate(0); } if(unit==="year") d.setFullYear(d.getFullYear()+value); return d; }
 function changeCalcMode(){ const mode=document.getElementById("calcMode").value; ["nsxBlock","hsdBlock","beforeHsdBlock","nsxPeriodBlock"].forEach(function(id){document.getElementById(id).classList.add("hidden");}); if(mode==="full"){ document.getElementById("nsxBlock").classList.remove("hidden"); document.getElementById("hsdBlock").classList.remove("hidden"); } if(mode==="hsdBack"){ document.getElementById("hsdBlock").classList.remove("hidden"); document.getElementById("beforeHsdBlock").classList.remove("hidden"); } if(mode==="nsxPeriod"){ document.getElementById("nsxBlock").classList.remove("hidden"); document.getElementById("nsxPeriodBlock").classList.remove("hidden"); } }
@@ -493,57 +493,57 @@ function confirmDeleteHistory(){ localStorage.removeItem(historyKey); renderDash
 function closeConfirmPopup(){ const b=document.getElementById("confirmBox"); b.classList.add("hidden"); b.classList.remove("flex"); }
 function exportExcel(){ const h=JSON.parse(localStorage.getItem(historyKey)||"[]"); if(!h.length){ alert("Không có dữ liệu"); return; } const ws=XLSX.utils.json_to_sheet(h.map(function(x){ return {"Tên SP":x.TenSP||"","Barcode":x.Barcode||"","NSX":new Date(x.NSX).toLocaleDateString("vi-VN"),"HSD":new Date(x.HSD).toLocaleDateString("vi-VN"),"Mốc 30%":new Date(x.M30).toLocaleDateString("vi-VN"),"Mốc 20%":new Date(x.M20).toLocaleDateString("vi-VN"),"Trạng thái 30%":x.CanhBao30,"Trạng thái 20%":x.CanhBao20,"Thời gian tính":x.ThoiGian,"Đã kiểm date":x.completed?"Đã xử lý":"Chưa xử lý"}; })); const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,"HSD"); XLSX.writeFile(wb,"saigoncoop_hsd.xlsx"); showPopup("export"); }
 function resetForm(){ productName.value=""; barcode.value=""; nsx.value=""; hsd.value=""; beforeHsdValue.value=""; periodValue.value=""; result.innerHTML=""; }
-
+ 
 /* ===== PRINT ===== */
 function addBarcode(code){ let d=JSON.parse(localStorage.getItem(printKey)||"{}"); d[code]=(d[code]||0)+1; localStorage.setItem(printKey,JSON.stringify(d)); renderPrint(); }
 function renderPrint(){ const d=JSON.parse(localStorage.getItem(printKey)||"{}"); printHistory.innerHTML=Object.entries(d).map(function(e){ return '<div class="chat-item">'+e[0]+','+e[1]+'</div>'; }).join(""); }
 function clearPrintHistory(){ localStorage.removeItem(printKey); renderPrint(); }
 function exportText(){ const d=JSON.parse(localStorage.getItem(printKey)||"{}"); if(!Object.keys(d).length){ alert("Không có dữ liệu"); return; } const blob=new Blob([Object.entries(d).map(function(e){return e[0]+","+e[1];}).join("\n")],{type:"text/plain;charset=utf-8"}); const url=URL.createObjectURL(blob); const a=document.createElement("a"); a.href=url; a.download="barcode_print.txt"; document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url); localStorage.removeItem(printKey); renderPrint(); showPopup("export"); }
-
+ 
 /* ===== POPUP ===== */
 function showPopup(type){ if(isPopupShowing) return; isPopupShowing=true; const popup=document.getElementById("alertPopup"),box=document.getElementById("popupBox"),title=document.getElementById("popupTitle"),msg=document.getElementById("popupMsg"); box.className="bg-white p-5 rounded-xl w-[90%] max-w-sm text-center"; if(type==="20"){ title.innerText="CẢNH BÁO MỐC 20%"; msg.innerText="Rút hàng khỏi quầy ngay."; box.classList.add("popup-pulse-20"); } else if(type==="30"){ title.innerText="CẢNH BÁO MỐC 30%"; msg.innerText="Báo cáo quản lý để thực hiện giải tồn."; box.classList.add("popup-pulse-30"); } else if(type==="export"){ title.innerText="XUẤT FILE THÀNH CÔNG"; msg.innerText="Dữ liệu đã được tải về."; } popup.style.display="flex"; if(type==="export") setTimeout(closePopup,2500); }
 function closePopup(){ document.getElementById("alertPopup").style.display="none"; isPopupShowing=false; }
-
+ 
 /* ===== CHECK DATE POPUP ===== */
 function checkStoredProducts(){ let data=JSON.parse(localStorage.getItem(historyKey)||"[]"); if(!Array.isArray(data)||!data.length){ closeCheckDatePopup(); return; } const today=new Date(); today.setHours(0,0,0,0); const warn=data.filter(function(item){ if(item.completed===true) return false; const m30=new Date(item.M30); if(!m30||isNaN(m30)) return false; m30.setHours(0,0,0,0); const b=new Date(m30); b.setDate(b.getDate()-15); const a=new Date(m30); a.setDate(a.getDate()+10); return today>=b&&today<=a; }); if(warn.length) showCheckDatePopup(warn); else closeCheckDatePopup(); }
 function showCheckDatePopup(list){ isPopupShowing=true; const box=document.getElementById("checkDateBox"),container=document.getElementById("checkDateList"),inner=document.getElementById("checkDateInner"); inner.classList.remove("checkdate-pulse"); if(!list||!list.length){ closeCheckDatePopup(); return; } container.innerHTML=list.map(function(item){ return '<div class="border p-2 rounded"><div><b>'+(item.TenSP||"-")+'</b></div><div>Ngưỡng 30%: '+new Date(item.M30).toLocaleDateString("vi-VN")+'</div><div>HSD: '+new Date(item.HSD).toLocaleDateString("vi-VN")+'</div><button onclick="completeProduct('+item.id+')" class="mt-2 bg-red-600 text-white px-3 py-1 rounded text-sm">HOÀN THÀNH</button></div>'; }).join(""); inner.classList.add("checkdate-pulse"); box.style.display="flex"; }
 function completeProduct(id){ let data=JSON.parse(localStorage.getItem(historyKey)||"[]"); data=data.map(function(item){ return item.id===id?Object.assign({},item,{completed:true}):item; }); localStorage.setItem(historyKey,JSON.stringify(data)); const today=new Date(); today.setHours(0,0,0,0); const warn=data.filter(function(item){ if(item.completed) return false; const m30=new Date(item.M30); if(isNaN(m30)) return false; m30.setHours(0,0,0,0); const b=new Date(m30); b.setDate(b.getDate()-15); const a=new Date(m30); a.setDate(a.getDate()+10); return today>=b&&today<=a; }); if(warn.length>0) showCheckDatePopup(warn); else closeCheckDatePopup(); autoCleanExpired(); renderDashboard(); renderHistory(); showToast("Đã xử lý sản phẩm"); }
 function closeCheckDatePopup(){ const box=document.getElementById("checkDateBox"),inner=document.getElementById("checkDateInner"); inner.classList.remove("checkdate-pulse"); box.style.display="none"; isPopupShowing=false; }
 function showToast(msg){ const t=document.getElementById("toastBox"); t.innerText=msg; t.classList.add("show"); setTimeout(function(){t.classList.remove("show");},2500); }
-
+ 
 /* ===== TOOL NAV ===== */
 function openTool(name){ document.getElementById("toolMenu").style.display="none"; document.querySelectorAll(".tool-box").forEach(function(e){e.classList.remove("active");}); document.getElementById("tool"+name.charAt(0).toUpperCase()+name.slice(1)).classList.add("active"); }
 function backTool(){ document.getElementById("toolMenu").style.display="grid"; document.querySelectorAll(".tool-box").forEach(function(e){e.classList.remove("active");}); }
-
+ 
 /* ===== TOOL: TỈ LỆ LÃI ===== */
 function calcProfit(){ const cost=num(toolCost.value),price=num(toolPrice.value),vat=Number(toolVat.value); if(!cost||!price) return alert("Nhập dữ liệu"); const pnv=price/(1+vat/100); profitResult.innerHTML="<b>Tỉ lệ lãi:</b> "+((pnv-cost)/pnv*100).toFixed(2)+" %"; }
 function resetProfit(){ toolCost.value=""; toolPrice.value=""; profitResult.innerHTML=""; }
-
+ 
 /* ===== TOOL: TÍNH GIÁ SẢN PHẨM ===== */
 function toggleCostVatBlock(){ const mode=document.getElementById("toolMode2").value; document.getElementById("costVatTypeBlock").classList.toggle("hidden",mode!=="cost"); }
 function toggleCostVatDetail(){ const type=document.getElementById("toolCostVatType").value; document.getElementById("costVatDetail").classList.toggle("hidden",type!=="include"); }
 function calcProduct(){ const profitPct=Number(document.getElementById("toolProfit2").value),vatSell=Number(document.getElementById("toolVat2").value),mode=document.getElementById("toolMode2").value,val=num(document.getElementById("toolValue2").value); if(!profitPct||!val) return alert("Vui lòng nhập đầy đủ dữ liệu"); if(profitPct<=0||profitPct>=100) return alert("Tỉ lệ lãi phải trong khoảng 0% – 100%"); const margin=profitPct/100; if(mode==="cost"){ const costVatType=document.getElementById("toolCostVatType").value,vatCost=Number(document.getElementById("toolCostVat").value||0); const costExVat=(costVatType==="include")?val/(1+vatCost/100):val; const sellNoVat=costExVat/(1-margin),sellWithVat=sellNoVat*(1+vatSell/100),marginReal=((sellNoVat-costExVat)/sellNoVat*100).toFixed(2); document.getElementById("productResult").innerHTML='<div class="border rounded-lg p-3 bg-gray-50 space-y-1 mt-2"><div class="text-xs text-gray-400 font-semibold uppercase tracking-wide mb-1">Kết quả</div><div>📥 Giá vốn (chưa VAT): <b>'+money(Math.round(costExVat))+' đ</b></div><div>🏷 Giá bán (chưa VAT): <b>'+money(Math.round(sellNoVat))+' đ</b></div><div class="pt-1 text-base">💰 Giá bán (có VAT '+vatSell+'%): <b class="text-red-600">'+money(Math.round(sellWithVat))+' đ</b></div><div class="text-green-700 text-xs pt-1 border-t mt-1">✔ Tỉ lệ lãi thực: '+marginReal+'%</div></div>'; } else { const sellNoVat=val/(1+vatSell/100),costExVat=sellNoVat*(1-margin),marginReal=((sellNoVat-costExVat)/sellNoVat*100).toFixed(2); document.getElementById("productResult").innerHTML='<div class="border rounded-lg p-3 bg-gray-50 space-y-1 mt-2"><div class="text-xs text-gray-400 font-semibold uppercase tracking-wide mb-1">Kết quả</div><div>💰 Giá bán (có VAT '+vatSell+'%): <b>'+money(Math.round(val))+' đ</b></div><div>🏷 Giá bán (chưa VAT): <b>'+money(Math.round(sellNoVat))+' đ</b></div><div class="pt-1 text-base">📥 Giá vốn (chưa VAT): <b class="text-red-600">'+money(Math.round(costExVat))+' đ</b></div><div class="text-green-700 text-xs pt-1 border-t mt-1">✔ Tỉ lệ lãi thực: '+marginReal+'%</div></div>'; } }
 function resetProduct(){ document.getElementById("toolProfit2").value=""; document.getElementById("toolValue2").value=""; document.getElementById("productResult").innerHTML=""; document.getElementById("toolCostVatType").value="exclude"; document.getElementById("toolCostVat").value="0"; document.getElementById("costVatDetail").classList.add("hidden"); }
-
+ 
 /* ===== TOOL: GIỮ NGUYÊN LÃI ===== */
 function calcKeep(){ const price=num(keepPrice.value),profit=Number(keepProfit.value)/100,qty=Number(keepQty.value),discount=Number(keepDiscount.value)/100; if(!price||!profit||!qty) return alert("Nhập dữ liệu"); const pa=price*(1-discount),nq=qty*(price/pa); keepResult.innerHTML="Giá sau giảm: <b>"+money(pa)+" đ</b><br>Cần bán: <b>"+Math.ceil(nq)+"</b> sản phẩm"; }
 function resetKeep(){ keepPrice.value=""; keepProfit.value=""; keepQty.value=""; keepDiscount.value=""; keepResult.innerHTML=""; }
-
+ 
 /* ===== TOOL: VÒNG QUAY ===== */
 function calcInventory(){ const sales=num(invSales.value),stock=num(invStock.value),period=invPeriod.value; if(!sales||!stock) return alert("Nhập dữ liệu"); const turn=sales/stock,exp=period==="month"?"~ "+(30/turn).toFixed(1)+" ngày / vòng":"~ "+(365/turn).toFixed(1)+" ngày / vòng"; inventoryResult.innerHTML="Vòng quay: <b>"+turn.toFixed(2)+"</b><br>"+exp; }
 function resetInventory(){ invSales.value=""; invStock.value=""; inventoryResult.innerHTML=""; }
-
+ 
 /* ===== TOOL: PROMO ===== */
 function calcPromoProfit(){ const cost=num(promoCost.value),disc=Number(promoDiscount.value)/100,price=num(promoPrice.value),vat=Number(promoVat.value)/100; if(!cost||!price) return alert("Nhập dữ liệu"); const ca=cost*(1-disc),pnv=price/(1+vat),profit=((pnv-ca)/pnv)*100; promoResult.innerHTML="Giá vốn sau KM: <b>"+money(ca)+" đ</b><br>Giá bán chưa VAT: <b>"+money(pnv)+" đ</b><br>Tỉ lệ lãi: <b>"+profit.toFixed(2)+" %</b>"; }
 function resetPromo(){ promoCost.value=""; promoDiscount.value=""; promoPrice.value=""; promoResult.innerHTML=""; }
-
+ 
 /* ===== TOOL: DISCOUNT RISK ===== */
 function calcDiscountRisk(){ const cost=num(riskCost.value),margin=Number(riskMargin.value)/100,discount=Number(riskDiscount.value)/100; if(!cost||!margin) return alert("Nhập dữ liệu"); const price=cost/(1-margin),pa=price*(1-discount),mn=(pa-cost)/pa,ni=margin/mn; let warn=""; if(mn<0.1) warn="<span style='color:red;font-weight:bold'>⚠️ RẤT NGUY HIỂM</span>"; else if(mn<0.2) warn="<span style='color:#f97316;font-weight:bold'>⚠️ Lợi nhuận giảm mạnh</span>"; else warn="<span style='color:green'>An toàn</span>"; riskResult.innerHTML="Giá bán chuẩn: <b>"+money(price)+" đ</b><br>Giá sau giảm: <b>"+money(pa)+" đ</b><br>Margin còn lại: <b>"+(mn*100).toFixed(2)+" %</b><br>Số lượng cần tăng: <b>"+(ni*100-100).toFixed(1)+" %</b><br>"+warn; }
 function resetDiscountRisk(){ riskCost.value=""; riskMargin.value=""; riskDiscount.value=""; riskResult.innerHTML=""; }
-
+ 
 /* ===== BLUR FORMAT ===== */
 ["toolCost","toolPrice","toolValue2","keepPrice","invSales","invStock","promoCost","promoPrice","riskCost"].forEach(function(id){ const el=document.getElementById(id); if(el) el.addEventListener("blur",function(){ let v=el.value.replace(/\./g,"").replace(/,/g,"."); if(v&&!isNaN(v)) el.value=Number(v).toLocaleString("vi-VN"); }); });
-
+ 
 /* ===== INIT ===== */
 changeCalcMode();
 autoCleanExpired();
