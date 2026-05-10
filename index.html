@@ -49,18 +49,6 @@ body{background:#f3f4f6}
 .stat-warn{background:#faeeda;color:#854f0b}
 .stat-danger{background:#fcebeb;color:#a32d2d}
 .stat-total{background:#f1f5f9;color:#334155}
-/* Hiển thị nn/mm/yyyy khi ô date chưa có giá trị */
-input[type=date]:not(:valid):before{
-  content: attr(placeholder);
-  color:#9ca3af;
-  pointer-events:none;
-}
-input[type=date]:not(:valid){
-  color: transparent;
-}
-input[type=date]:valid{
-  color: inherit;
-}
 /* ===== ĐÀO TẠO ===== */
 .train-role-btn{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:20px 12px;border-radius:14px;border:2px solid #e5e7eb;background:#fff;cursor:pointer;transition:all .2s;font-weight:600;font-size:14px;box-shadow:0 2px 8px rgba(0,0,0,.06);}
 .train-role-btn:hover{border-color:#c40018;background:#fff5f5;transform:translateY(-2px)}
@@ -176,11 +164,15 @@ input[type=date]:valid{
   </select>
   <div id="nsxBlock">
     <label class="font-semibold">Ngày sản xuất (NSX)</label>
-    <input type="date" id="nsx" class="border p-2 rounded w-full" placeholder="nn/mm/yyyy">
+    <input type="text" id="nsx" inputmode="numeric" maxlength="10"
+      class="border p-2 rounded w-full tracking-widest"
+      placeholder="nn/mm/yyyy" oninput="dateMask(this)" onkeydown="dateMaskKey(this,event)">
   </div>
   <div id="hsdBlock">
     <label class="font-semibold">Hạn sử dụng (HSD)</label>
-    <input type="date" id="hsd" class="border p-2 rounded w-full" placeholder="nn/mm/yyyy">
+    <input type="text" id="hsd" inputmode="numeric" maxlength="10"
+      class="border p-2 rounded w-full tracking-widest"
+      placeholder="nn/mm/yyyy" oninput="dateMask(this)" onkeydown="dateMaskKey(this,event)">
   </div>
   <div id="beforeHsdBlock" class="hidden">
     <label class="font-semibold">Thời gian trước HSD</label>
@@ -753,9 +745,92 @@ async function startScan(){ if(isIOS()){ alert("⚠️ iPhone không hỗ trợ 
 async function startPrintScan(){ if(isIOS()){ alert("⚠️ Thiết bị iOS không hỗ trợ quét barcode."); return; } if(isScanning) return; isScanning=true; if(qr2){ try{ await qr2.stop(); await qr2.clear(); }catch(e){} qr2=null; } const r=document.getElementById("printReader"); r.innerHTML='<div class="scan-frame"><div class="scan-line"></div></div>'; r.classList.remove("hidden"); qr2=new Html5Qrcode("printReader"); qr2.start({facingMode:"environment"},scanCfg,function(code){ addBarcode(code); qr2.stop().then(function(){ qr2.clear(); qr2=null; r.classList.add("hidden"); isScanning=false; }); }).catch(function(){ isScanning=false; r.classList.add("hidden"); }); }
 
 /* ===== HSD CALCULATOR ===== */
+
+// Auto-mask nn/mm/yyyy — xử lý gõ vào và xóa
+function dateMask(el){
+  var raw = el.value.replace(/\D/g,'');  // chỉ giữ số
+  if(raw.length > 8) raw = raw.substring(0,8);
+  var out = '';
+  if(raw.length === 0){ el.value=''; return; }
+  if(raw.length <= 2){
+    out = raw;
+  } else if(raw.length <= 4){
+    out = raw.substring(0,2) + '/' + raw.substring(2);
+  } else {
+    out = raw.substring(0,2) + '/' + raw.substring(2,4) + '/' + raw.substring(4);
+  }
+  el.value = out;
+}
+
+// Xử lý keydown: cho phép backspace xóa tự nhiên qua dấu /
+function dateMaskKey(el, e){
+  var key = e.key;
+  // Cho phép: Backspace, Delete, Tab, mũi tên, Ctrl+A/C/V/X
+  if(['Backspace','Delete','Tab','ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].indexOf(key)!==-1) return;
+  if((e.ctrlKey||e.metaKey) && ['a','c','v','x'].indexOf(key.toLowerCase())!==-1) return;
+  // Chỉ cho phép nhập số
+  if(!/^\d$/.test(key)){ e.preventDefault(); return; }
+  // Không cho nhập quá 8 chữ số
+  var digits = el.value.replace(/\D/g,'');
+  if(digits.length >= 8){ e.preventDefault(); }
+}
+
+// Parse dd/mm/yyyy → Date object (trả null nếu không hợp lệ)
+function parseDMY(str){
+  if(!str || str.length < 10) return null;
+  var parts = str.split('/');
+  if(parts.length !== 3) return null;
+  var d = parseInt(parts[0],10);
+  var m = parseInt(parts[1],10) - 1; // month 0-based
+  var y = parseInt(parts[2],10);
+  if(isNaN(d)||isNaN(m)||isNaN(y)) return null;
+  if(y < 1900 || y > 2100) return null;
+  if(m < 0 || m > 11) return null;
+  if(d < 1 || d > 31) return null;
+  var dt = new Date(y, m, d);
+  // Kiểm tra ngày có thực sự tồn tại không (VD: 31/02)
+  if(dt.getDate()!==d || dt.getMonth()!==m || dt.getFullYear()!==y) return null;
+  return dt;
+}
+
 function addPeriod(date,value,unit){ const d=new Date(date); if(unit==="day") d.setDate(d.getDate()+value); if(unit==="month"){ const dy=d.getDate(); d.setMonth(d.getMonth()+value); if(d.getDate()<dy) d.setDate(0); } if(unit==="year") d.setFullYear(d.getFullYear()+value); return d; }
 function changeCalcMode(){ const mode=document.getElementById("calcMode").value; ["nsxBlock","hsdBlock","beforeHsdBlock","nsxPeriodBlock"].forEach(function(id){document.getElementById(id).classList.add("hidden");}); if(mode==="full"){ document.getElementById("nsxBlock").classList.remove("hidden"); document.getElementById("hsdBlock").classList.remove("hidden"); } if(mode==="hsdBack"){ document.getElementById("hsdBlock").classList.remove("hidden"); document.getElementById("beforeHsdBlock").classList.remove("hidden"); } if(mode==="nsxPeriod"){ document.getElementById("nsxBlock").classList.remove("hidden"); document.getElementById("nsxPeriodBlock").classList.remove("hidden"); } }
-function calculate(){ let nsxD,hsdD; const mode=calcMode.value; if(mode==="full"){ if(!nsx.value||!hsd.value){ alert("Nhập đủ NSX & HSD"); return; } nsxD=new Date(nsx.value); hsdD=new Date(hsd.value); } if(mode==="hsdBack"){ if(!hsd.value){ alert("Nhập HSD"); return; } const v=Number(beforeHsdValue.value),u=beforeHsdUnit.value; if(!v){ alert("Nhập thời gian trước HSD"); return; } hsdD=new Date(hsd.value); nsxD=addPeriod(hsdD,-v,u); } if(mode==="nsxPeriod"){ if(!nsx.value){ alert("Nhập NSX"); return; } const v=Number(periodValue.value),u=periodUnit.value; if(!v){ alert("Nhập thời gian sử dụng"); return; } nsxD=new Date(nsx.value); hsdD=addPeriod(nsxD,v,u); } if(hsdD<=nsxD){ alert("HSD phải lớn hơn NSX"); return; } const total=(hsdD-nsxD)/86400000; const date30=new Date(nsxD.getTime()+total*0.7*86400000); const date20=new Date(nsxD.getTime()+total*0.8*86400000); const today=new Date(); let warn30="",warn20="",b30="",b20="",f30="Bình thường",f20="Bình thường"; if(today>=date30){ warn30="⚠️ <b>Báo cáo Quản lý giải tồn</b>"; b30="blink30"; f30="Giải tồn"; } if(today>=date20){ warn20="⚠️ <b>Rút hàng khỏi quầy</b>"; b20="blink20"; f20="Rút hàng"; } result.innerHTML='<div class="border p-3 mb-3 '+b30+'"><b>MỐC 30%</b><br>📅 '+date30.toLocaleDateString("vi-VN")+'<div>'+(warn30||"<span class='text-green-700'>Trong ngưỡng an toàn</span>")+'</div></div><div class="border p-3 '+b20+'"><b>MỐC 20%</b><br>📅 '+date20.toLocaleDateString("vi-VN")+'<div>'+(warn20||"<span class='text-green-700'>Trong ngưỡng an toàn</span>")+'</div></div>'; saveHistory(nsxD,hsdD,date30,date20,f30,f20); autoCleanExpired(); if(today>=date20) showPopup("20"); else if(today>=date30) showPopup("30"); }
+
+function calculate(){
+  let nsxD, hsdD;
+  const mode = calcMode.value;
+  if(mode==="full"){
+    nsxD = parseDMY(nsx.value);
+    hsdD = parseDMY(hsd.value);
+    if(!nsxD || !hsdD){ alert("Nhập đúng định dạng NSX & HSD (nn/mm/yyyy)"); return; }
+  }
+  if(mode==="hsdBack"){
+    hsdD = parseDMY(hsd.value);
+    if(!hsdD){ alert("Nhập đúng định dạng HSD (nn/mm/yyyy)"); return; }
+    const v=Number(beforeHsdValue.value), u=beforeHsdUnit.value;
+    if(!v){ alert("Nhập thời gian trước HSD"); return; }
+    nsxD = addPeriod(hsdD, -v, u);
+  }
+  if(mode==="nsxPeriod"){
+    nsxD = parseDMY(nsx.value);
+    if(!nsxD){ alert("Nhập đúng định dạng NSX (nn/mm/yyyy)"); return; }
+    const v=Number(periodValue.value), u=periodUnit.value;
+    if(!v){ alert("Nhập thời gian sử dụng"); return; }
+    hsdD = addPeriod(nsxD, v, u);
+  }
+  if(hsdD<=nsxD){ alert("HSD phải lớn hơn NSX"); return; }
+  const total=(hsdD-nsxD)/86400000;
+  const date30=new Date(nsxD.getTime()+total*0.7*86400000);
+  const date20=new Date(nsxD.getTime()+total*0.8*86400000);
+  const today=new Date();
+  let warn30="",warn20="",b30="",b20="",f30="Bình thường",f20="Bình thường";
+  if(today>=date30){ warn30="⚠️ <b>Báo cáo Quản lý giải tồn</b>"; b30="blink30"; f30="Giải tồn"; }
+  if(today>=date20){ warn20="⚠️ <b>Rút hàng khỏi quầy</b>"; b20="blink20"; f20="Rút hàng"; }
+  result.innerHTML='<div class="border p-3 mb-3 '+b30+'"><b>MỐC 30%</b><br>📅 '+date30.toLocaleDateString("vi-VN")+'<div>'+(warn30||"<span class='text-green-700'>Trong ngưỡng an toàn</span>")+'</div></div><div class="border p-3 '+b20+'"><b>MỐC 20%</b><br>📅 '+date20.toLocaleDateString("vi-VN")+'<div>'+(warn20||"<span class='text-green-700'>Trong ngưỡng an toàn</span>")+'</div></div>';
+  saveHistory(nsxD,hsdD,date30,date20,f30,f20);
+  autoCleanExpired();
+  if(today>=date20) showPopup("20"); else if(today>=date30) showPopup("30");
+}
 function saveHistory(nsxD,hsdD,date30,date20,f30,f20){ const h=JSON.parse(localStorage.getItem(historyKey))||[]; h.unshift({id:Date.now(),TenSP:productName.value.trim()||"",Barcode:barcode.value.trim()||"",NSX:nsxD.toISOString(),HSD:hsdD.toISOString(),M30:date30.toISOString(),M20:date20.toISOString(),CanhBao30:f30,CanhBao20:f20,ThoiGian:new Date().toLocaleString("vi-VN")}); localStorage.setItem(historyKey,JSON.stringify(h)); renderHistory(); }
 function setFilter(type){ currentFilter=type; document.querySelectorAll(".filter-btn").forEach(function(b){b.classList.remove("active");}); document.getElementById("f-"+type).classList.add("active"); renderHistory(); }
 function renderDashboard(){ const data=JSON.parse(localStorage.getItem(historyKey)||"[]"); const el=document.getElementById("dashboardStats"); const card=document.getElementById("dashboardCard"); if(!el) return; if(!data.length){ card.style.display="none"; return; } card.style.display="block"; const today=new Date(); today.setHours(0,0,0,0); let total=data.length,safe=0,warn30=0,danger20=0,expired=0; data.forEach(function(x){ const hsd=new Date(x.HSD); hsd.setHours(0,0,0,0); const m20=new Date(x.M20); m20.setHours(0,0,0,0); const m30=new Date(x.M30); m30.setHours(0,0,0,0); if(hsd<today){expired++;} else if(today>=m20){danger20++;} else if(today>=m30){warn30++;} else {safe++;} }); el.innerHTML='<div class="stat-card stat-total"><div class="stat-num">'+total+'</div><div class="stat-lbl">📦 Tổng SP</div></div><div class="stat-card stat-safe" onclick="setFilter(\'all\')" style="cursor:pointer"><div class="stat-num">'+safe+'</div><div class="stat-lbl">✅ An toàn</div></div><div class="stat-card stat-warn" onclick="setFilter(\'30\')" style="cursor:pointer"><div class="stat-num">'+warn30+'</div><div class="stat-lbl">⚠️ Giải tồn</div></div><div class="stat-card stat-danger" onclick="setFilter(\'20\')" style="cursor:pointer"><div class="stat-num">'+danger20+'</div><div class="stat-lbl">🔴 Rút hàng</div></div><div class="stat-card" style="background:#1e293b;color:#f8fafc;border-radius:10px;padding:10px 12px;text-align:center;flex:1;min-width:70px"><div class="stat-num" style="font-size:22px;font-weight:700">'+expired+'</div><div class="stat-lbl" style="font-size:11px;margin-top:2px;font-weight:500">❌ Hết hạn</div></div>'; }
