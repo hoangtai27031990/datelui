@@ -63,17 +63,11 @@ body{background:#f3f4f6}
 .pdf-viewer-wrapper{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:3000;display:flex;flex-direction:column;}
 .pdf-viewer-header{background:#c40018;color:#fff;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
 .pdf-viewer-body{flex:1;overflow:hidden}
-.pdf-viewer-body iframe{
-  width:100%;
-  height:100%;
-  border:none;
-  user-select:none;
-  -webkit-user-select:none;
-}
+.pdf-viewer-body iframe{width:100%;height:100%;border:none}
 </style>
 </head>
 <body class="max-w-xl mx-auto p-3">
- 
+
 <!-- POPUP CẢNH BÁO -->
 <div id="alertPopup" style="display:none" class="fixed inset-0 items-center justify-center bg-black bg-opacity-50 z-[2000]">
   <div id="popupBox" class="bg-white p-5 rounded-xl w-[90%] max-w-sm text-center">
@@ -82,7 +76,7 @@ body{background:#f3f4f6}
     <button onclick="closePopup()" class="brand-bg text-white px-4 py-2 rounded">Đã hiểu</button>
   </div>
 </div>
- 
+
 <!-- POPUP KIỂM DATE -->
 <div id="checkDateBox" style="display:none" class="fixed inset-0 items-center justify-center bg-black bg-opacity-50 z-[2100]">
   <div id="checkDateInner" class="bg-white p-5 rounded-xl w-[95%] max-w-md text-center">
@@ -93,23 +87,41 @@ body{background:#f3f4f6}
     </div>
   </div>
 </div>
- 
+
 <!-- PDF VIEWER FULLSCREEN -->
 <div id="pdfViewer" class="pdf-viewer-wrapper" style="display:none">
   <div class="pdf-viewer-header">
     <span id="pdfViewerTitle" class="font-bold text-base truncate flex-1 mr-3"></span>
     <button onclick="closePdfViewer()" style="font-size:28px;line-height:1;background:none;border:none;color:white;cursor:pointer">&times;</button>
   </div>
- <div class="pdf-viewer-body">
-  <iframe
-    id="pdfFrame"
-    src=""
-    allowfullscreen
-    sandbox="allow-scripts allow-same-origin">
-  </iframe>
+  <div class="pdf-viewer-body">
+    <iframe id="pdfFrame" src="" allowfullscreen></iframe>
+  </div>
+  <!-- NÚT XÁC NHẬN ĐÃ HỌC -->
+  <div style="background:#fff;padding:12px 16px;border-top:1px solid #e5e7eb;flex-shrink:0">
+    <button id="btnConfirmLearn" onclick="showLearnConfirm()"
+      style="width:100%;background:#16a34a;color:#fff;font-weight:700;font-size:15px;padding:13px;border:none;border-radius:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px">
+      ✅ Tôi đã đọc xong – Xác nhận hoàn thành
+    </button>
+  </div>
 </div>
+
+<!-- POPUP XÁC NHẬN ĐÃ HỌC ĐẦY ĐỦ -->
+<div id="learnConfirmPopup" style="display:none" class="fixed inset-0 items-center justify-center bg-black bg-opacity-60 z-[3100]">
+  <div style="background:#fff;border-radius:16px;padding:24px;width:90%;max-width:360px;text-align:center;box-shadow:0 8px 32px rgba(0,0,0,.2)">
+    <div style="font-size:40px;margin-bottom:8px">📖</div>
+    <div style="font-weight:700;font-size:17px;margin-bottom:8px;color:#111">Xác nhận hoàn thành bài học</div>
+    <div id="learnConfirmModuleTitle" style="font-size:13px;color:#6b7280;margin-bottom:16px;line-height:1.5"></div>
+    <div style="background:#f0fdf4;border:1.5px solid #bbf7d0;border-radius:10px;padding:12px;margin-bottom:18px;font-size:13px;color:#166534">
+      Bạn xác nhận đã đọc và hiểu toàn bộ nội dung bài này?
+    </div>
+    <div style="display:flex;gap:10px">
+      <button onclick="cancelLearnConfirm()" style="flex:1;background:#f1f5f9;color:#374151;font-weight:600;padding:11px;border:none;border-radius:8px;cursor:pointer;font-size:14px">Chưa xong</button>
+      <button onclick="confirmLearnDone()" style="flex:1;background:#16a34a;color:#fff;font-weight:700;padding:11px;border:none;border-radius:8px;cursor:pointer;font-size:14px">✅ Đã học xong</button>
+    </div>
+  </div>
 </div>
- 
+
 <!-- SIDEBAR -->
 <div id="sidebar">
   <div class="p-4 border-b text-center"><div class="font-bold brand-text">Saigon Co.op</div></div>
@@ -121,13 +133,13 @@ body{background:#f3f4f6}
   </div>
 </div>
 <div id="overlay" onclick="toggleMenu()"></div>
- 
+
 <!-- HEADER -->
 <div class="flex justify-between items-center mb-4 p-3 rounded-lg brand-bg text-white">
   <div class="font-bold text-lg" id="headerTitle">HỆ THỐNG QUẢN LÝ HSD</div>
   <button onclick="toggleMenu()" class="text-2xl">☰</button>
 </div>
- 
+
 <!-- ================= MAIN APP ================= -->
 <div id="mainApp">
 <div class="card p-4 space-y-3">
@@ -196,7 +208,7 @@ body{background:#f3f4f6}
   <div id="history" class="text-sm space-y-1 max-h-64 overflow-auto"></div>
 </div>
 </div>
- 
+
 <!-- ================= PRINT APP ================= -->
 <div id="printApp" class="hidden card p-4">
   <h2 class="font-bold brand-text mb-3">In bảng giá quầy</h2>
@@ -208,7 +220,7 @@ body{background:#f3f4f6}
   <div id="printReader" class="hidden"></div>
   <div class="chat-box" id="printHistory"></div>
 </div>
- 
+
 <!-- ================= TOOL APP ================= -->
 <div id="toolApp" class="hidden space-y-4">
 <div class="card p-4">
@@ -322,10 +334,23 @@ body{background:#f3f4f6}
   <div id="riskResult"></div>
 </div>
 </div>
- 
+
+<!-- POPUP XÁC NHẬN RESET TIẾN TRÌNH -->
+<div id="trainResetConfirm" style="display:none" class="fixed inset-0 items-center justify-center bg-black bg-opacity-50 z-[2300]">
+  <div class="bg-white p-5 rounded-xl w-[90%] max-w-sm text-center">
+    <div style="font-size:28px;margin-bottom:8px">🔄</div>
+    <div class="font-bold text-lg mb-2 text-red-600">Xác nhận Reset tiến trình</div>
+    <div class="text-sm text-gray-600 mb-4">Toàn bộ lịch sử học của học viên này sẽ bị xóa. Thao tác không thể hoàn tác.</div>
+    <div class="flex justify-center gap-3">
+      <button onclick="confirmResetTrain()" class="bg-red-600 text-white px-4 py-2 rounded font-semibold">XÓA & RESET</button>
+      <button onclick="document.getElementById('trainResetConfirm').style.display='none'" class="bg-gray-400 text-white px-4 py-2 rounded">HỦY</button>
+    </div>
+  </div>
+</div>
+
 <!-- ================= TRAINING APP ================= -->
 <div id="trainingApp" class="hidden space-y-4">
- 
+
   <!-- TRANG CHỌN VAI TRÒ -->
   <div id="trainRolePage">
     <div class="card p-4">
@@ -344,11 +369,15 @@ body{background:#f3f4f6}
       </div>
     </div>
   </div>
- 
+
   <!-- TRANG LỘ TRÌNH CỬA HÀNG TRƯỞNG -->
   <div id="trainManagerPage" class="hidden space-y-4">
     <div class="card p-4">
-      <button onclick="backToRolePage()" style="color:#c40018;font-weight:600;font-size:14px;background:none;border:none;cursor:pointer;padding:0 0 12px 0;display:block">← Quay lại</button>
+      <!-- Header -->
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+        <button onclick="backToRolePage()" style="color:#c40018;font-weight:600;font-size:14px;background:none;border:none;cursor:pointer;padding:0">← Quay lại</button>
+        <button onclick="askResetTrain()" style="background:#fff1f2;color:#c40018;border:1.5px solid #fecaca;border-radius:8px;padding:5px 12px;font-size:12px;font-weight:600;cursor:pointer">🔄 Reset tiến trình</button>
+      </div>
       <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px">
         <span style="font-size:32px">👔</span>
         <div>
@@ -356,23 +385,57 @@ body{background:#f3f4f6}
           <div style="font-size:13px;color:#6b7280">Lộ trình đào tạo nghiệp vụ</div>
         </div>
       </div>
-      <!-- Thanh tiến trình tổng -->
-      <div style="margin-bottom:16px">
-        <div style="display:flex;justify-content:space-between;font-size:12px;color:#6b7280;margin-bottom:4px">
+
+      <!-- Thanh tiến trình tổng (cả 2 giai đoạn) -->
+      <div style="background:#f8fafc;border-radius:10px;padding:12px;margin-bottom:16px">
+        <div style="display:flex;justify-content:space-between;font-size:12px;color:#6b7280;margin-bottom:5px">
           <span>Tiến trình tổng thể</span>
-          <span id="trainProgressText">0 / 1 bài</span>
+          <span id="trainProgressText">0 / 14 bài</span>
         </div>
         <div class="train-progress-bar">
-          <div class="train-progress-fill" id="trainProgressFill" style="width:0%"></div>
+          <div class="train-progress-fill" id="trainProgressFillTotal" style="width:0%"></div>
         </div>
+        <div id="trainProgressPct" style="font-size:11px;color:#c40018;font-weight:600;margin-top:4px;text-align:right">0%</div>
       </div>
-      <!-- Danh sách bài học -->
-      <div id="trainModuleList" class="space-y-3"></div>
+
+      <!-- GIAI ĐOẠN 1 -->
+      <div style="margin-bottom:20px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+          <div style="display:flex;align-items:center;gap:8px">
+            <div style="background:#0ea5e9;border-radius:6px;padding:3px 10px;font-size:12px;font-weight:700;color:#fff">GIAI ĐOẠN 1</div>
+            <span style="font-size:12px;color:#6b7280">Nghiệp vụ cơ bản</span>
+          </div>
+          <span id="train1ProgressText" style="font-size:11px;color:#0ea5e9;font-weight:600">0 / 5 bài</span>
+        </div>
+        <div style="margin-bottom:8px">
+          <div style="height:6px;border-radius:999px;background:#e0f2fe;overflow:hidden">
+            <div id="train1ProgressFill" style="height:100%;background:linear-gradient(90deg,#0ea5e9,#38bdf8);border-radius:999px;transition:width .4s ease;width:0%"></div>
+          </div>
+        </div>
+        <div id="trainModuleList1" class="space-y-2"></div>
+      </div>
+
+      <!-- GIAI ĐOẠN 2 -->
+      <div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+          <div style="display:flex;align-items:center;gap:8px">
+            <div style="background:#c40018;border-radius:6px;padding:3px 10px;font-size:12px;font-weight:700;color:#fff">GIAI ĐOẠN 2</div>
+            <span style="font-size:12px;color:#6b7280">Nghiệp vụ chuyên sâu</span>
+          </div>
+          <span id="train2ProgressText" style="font-size:11px;color:#c40018;font-weight:600">0 / 9 bài</span>
+        </div>
+        <div style="margin-bottom:8px">
+          <div style="height:6px;border-radius:999px;background:#fee2e2;overflow:hidden">
+            <div id="trainProgressFill" style="height:100%;background:linear-gradient(90deg,#c40018,#ff6b6b);border-radius:999px;transition:width .4s ease;width:0%"></div>
+          </div>
+        </div>
+        <div id="trainModuleList" class="space-y-2"></div>
+      </div>
     </div>
   </div>
- 
+
 </div>
- 
+
 <!-- CONFIRM XÓA -->
 <div id="confirmBox" class="fixed inset-0 hidden items-center justify-center bg-black bg-opacity-50 z-[2200]">
   <div class="bg-white p-5 rounded-xl w-[90%] max-w-sm text-center">
@@ -385,14 +448,14 @@ body{background:#f3f4f6}
   </div>
 </div>
 <div id="toastBox" class="toast"></div>
- 
+
 <script>
 /* ===== UTILS ===== */
 function isIOS(){ return /iPhone|iPad|iPod/i.test(navigator.userAgent); }
 function money(n){ const rounded=Math.round(Number(n)); return rounded.toLocaleString("vi-VN"); }
 function num(v){ return Number(String(v).replace(/\./g,"").replace(/,/g,".")) || 0; }
 function formatMoneyInput(el){ el.value=el.value.replace(/[^\d]/g,''); if(!el.value) return; el.value=Number(el.value).toLocaleString("vi-VN"); }
- 
+
 /* ===== STATE ===== */
 const historyKey="coop_hsd_history";
 const printKey="coop_print_history";
@@ -400,86 +463,144 @@ const trainKey="coop_train_progress";
 let qr=null, qr2=null, currentFilter="all";
 let isScanning=false, isPopupShowing=false;
 const scanCfg={fps:10, qrbox:250};
- 
-/* ===== DỮ LIỆU BÀI HỌC =====
-   Để thêm bài mới: copy 1 object, đổi id/title/subtitle/pdf
-   ================================================ */
-const trainModules = [
-  {
-    id: "thu-ngan-1",
-    title: "Nghiệp vụ thu ngân",
-    subtitle: "Phần 1 – Quy trình cơ bản",
-    icon: "🧾",
-    pdf: "bai1.pdf"
-  }
-  // Ví dụ thêm bài 2:
-  // { id: "thu-ngan-2", title: "Nghiệp vụ thu ngân", subtitle: "Phần 2 – Xử lý tình huống", icon: "🧾", pdf: "bai2.pdf" },
-  // { id: "quan-ly-hang", title: "Quản lý hàng hóa", subtitle: "Kiểm kê & nhập xuất kho", icon: "📦", pdf: "bai3.pdf" }
+
+/* ===== DỮ LIỆU BÀI HỌC – GIAI ĐOẠN 1 ===== */
+const trainModules1 = [
+  { id:"bai1-1", title:"Trưng bày, bổ sung hàng lên quầy",                         icon:"🛍️", pdf:"bai1-1.pdf" },
+  { id:"bai1-2", title:"Kiểm soát và chăm sóc hàng hóa",                            icon:"✅", pdf:"bai1-2.pdf" },
+  { id:"bai1-3", title:"Nghiệp vụ thu ngân – chương trình tính tiền",               icon:"🖥️", pdf:"bai1-3.pdf" },
+  { id:"bai1-4", title:"Thực hiện sơ chế biến và xử lý hàng tồn cuối ngày",        icon:"🔪", pdf:"bai1-4.pdf" },
+  { id:"bai1-5", title:"Kiểm nhận hàng hóa và chất xếp hàng hóa trong kho",        icon:"📥", pdf:"bai1-5.pdf" }
 ];
- 
+
+/* ===== DỮ LIỆU BÀI HỌC – GIAI ĐOẠN 2 ===== */
+const trainModules = [
+  { id:"bai1", title:"Các thao tác của BĐH tại quầy tính tiền",           icon:"🖥️", pdf:"bai1.pdf" },
+  { id:"bai2", title:"Công tác dự báo và đặt hàng",                       icon:"📋", pdf:"bai2.pdf" },
+  { id:"bai3", title:"Xử lý hóa đơn chứng từ",                            icon:"🧾", pdf:"bai3.pdf" },
+  { id:"bai4", title:"Kiểm soát các nghiệp vụ liên quan đến tồn kho",     icon:"📦", pdf:"bai4.pdf" },
+  { id:"bai5", title:"Kiểm soát tiền hàng",                               icon:"💰", pdf:"bai5.pdf" },
+  { id:"bai6", title:"Quản lý các hoạt động trong ca bán hàng",            icon:"🏪", pdf:"bai6.pdf" },
+  { id:"bai7", title:"Kiểm soát hàng A4, A8, hàng LCC, hàng KDS",        icon:"🔍", pdf:"bai7.pdf" },
+  { id:"bai8", title:"Quản lý nhân sự",                                   icon:"👥", pdf:"bai8.pdf" },
+  { id:"bai9", title:"Kiểm kê",                                            icon:"📊", pdf:"bai9.pdf" }
+];
+
 /* ===== TRAINING: LƯU / ĐỌC TIẾN TRÌNH ===== */
 function getTrainProgress(){ return JSON.parse(localStorage.getItem(trainKey)||"{}"); }
 function setTrainDone(moduleId){ const p=getTrainProgress(); if(!p[moduleId]) p[moduleId]={doneAt:new Date().toLocaleString("vi-VN")}; localStorage.setItem(trainKey,JSON.stringify(p)); }
 function isModuleDone(moduleId){ return !!getTrainProgress()[moduleId]; }
- 
-/* ===== TRAINING: RENDER DANH SÁCH BÀI ===== */
-function renderTrainModules(){
-  const list=document.getElementById("trainModuleList");
+
+/* ===== TRAINING: RENDER MODULE LIST (dùng chung 2 giai đoạn) ===== */
+function renderModuleList(modules, containerId, startIndex){
+  const list=document.getElementById(containerId);
   const progress=getTrainProgress();
-  const doneCount=trainModules.filter(m=>isModuleDone(m.id)).length;
-  const total=trainModules.length;
-  document.getElementById("trainProgressText").textContent=doneCount+" / "+total+" bài";
-  const pct=total>0?Math.round(doneCount/total*100):0;
-  document.getElementById("trainProgressFill").style.width=pct+"%";
-  list.innerHTML=trainModules.map(function(m,i){
+  list.innerHTML=modules.map(function(m,i){
     const done=isModuleDone(m.id);
     const doneAt=done?progress[m.id].doneAt:"";
     return '<div class="train-module-item '+(done?"done":"")+'" onclick="openModule(\''+m.id+'\')">'
-      +'<div class="train-badge '+(done?"train-badge-done":"train-badge-todo")+'">'+(done?"✓":(i+1))+'</div>'
+      +'<div class="train-badge '+(done?"train-badge-done":"train-badge-todo")+'">'+(done?"✓":(startIndex+i+1))+'</div>'
       +'<div style="flex:1;min-width:0">'
-        +'<div style="font-weight:600;font-size:14px">'+m.icon+' '+m.title+'</div>'
-        +'<div style="font-size:12px;color:#6b7280">'+m.subtitle+'</div>'
-        +(done?'<div style="font-size:11px;color:#16a34a;margin-top:2px">✅ Đã hoàn thành · '+doneAt+'</div>':"")
+        +'<div style="font-weight:600;font-size:13px">'+m.icon+' '+m.title+'</div>'
+        +(done?'<div style="font-size:11px;color:#16a34a;margin-top:2px">✅ Đã hoàn thành · '+doneAt+'</div>':'<div style="font-size:11px;color:#9ca3af;margin-top:2px">Chưa học</div>')
       +'</div>'
-      +'<div style="color:#d1d5db;font-size:20px">›</div>'
+      +'<div style="color:#d1d5db;font-size:20px;flex-shrink:0">›</div>'
     +'</div>';
   }).join("");
 }
- 
-/* ===== TRAINING: MỞ FILE PDF ===== */
-function openModule(moduleId){
 
-  const m = trainModules.find(function(x){
-    return x.id === moduleId;
-  });
+/* ===== TRAINING: RENDER TẤT CẢ ===== */
+function renderTrainModules(){
+  // Giai đoạn 1
+  const done1=trainModules1.filter(function(m){return isModuleDone(m.id);}).length;
+  const total1=trainModules1.length;
+  const pct1=total1>0?Math.round(done1/total1*100):0;
+  document.getElementById("train1ProgressText").textContent=done1+" / "+total1+" bài";
+  document.getElementById("train1ProgressFill").style.width=pct1+"%";
+  renderModuleList(trainModules1,"trainModuleList1",0);
 
-  if(!m) return;
+  // Giai đoạn 2
+  const done2=trainModules.filter(function(m){return isModuleDone(m.id);}).length;
+  const total2=trainModules.length;
+  const pct2=total2>0?Math.round(done2/total2*100):0;
+  document.getElementById("train2ProgressText").textContent=done2+" / "+total2+" bài";
+  document.getElementById("trainProgressFill").style.width=pct2+"%";
+  renderModuleList(trainModules,"trainModuleList",0);
 
-  // lưu tiến trình học
-  setTrainDone(moduleId);
-
-  // cập nhật giao diện
-  renderTrainModules();
-
-  // tiêu đề popup
-  document.getElementById("pdfViewerTitle").textContent =
-    m.title + " – " + m.subtitle;
-
-  // mở PDF nhưng ẩn toolbar
-  document.getElementById("pdfFrame").src =
-    m.pdf + "#toolbar=0&navpanes=0&scrollbar=1";
-
-  // hiển thị popup
-  document.getElementById("pdfViewer").style.display = "flex";
-
-  // thông báo
-  showToast("Đã lưu tiến trình học ✓");
+  // Tổng
+  const doneAll=done1+done2;
+  const totalAll=total1+total2;
+  const pctAll=totalAll>0?Math.round(doneAll/totalAll*100):0;
+  document.getElementById("trainProgressText").textContent=doneAll+" / "+totalAll+" bài";
+  document.getElementById("trainProgressFillTotal").style.width=pctAll+"%";
+  document.getElementById("trainProgressPct").textContent=pctAll+"%";
 }
+
+/* ===== TRAINING: MỞ FILE PDF (hiển thị inline, không download) ===== */
+let currentModuleId = null; // lưu bài đang xem
+
+function openModule(moduleId){
+  const allModules=trainModules1.concat(trainModules);
+  const m=allModules.find(function(x){return x.id===moduleId;});
+  if(!m) return;
+  currentModuleId=moduleId;
+  document.getElementById("pdfViewerTitle").textContent=m.icon+" "+m.title;
+  document.getElementById("pdfFrame").src=m.pdf+"#toolbar=0&navpanes=0&scrollbar=1&view=FitH";
+  document.getElementById("pdfViewer").style.display="flex";
+
+  // Nếu đã học rồi: nút xanh bình thường; chưa học: nút nổi bật hơn
+  const btn=document.getElementById("btnConfirmLearn");
+  if(isModuleDone(moduleId)){
+    btn.style.background="#16a34a";
+    btn.textContent="✅ Đã hoàn thành trước đó";
+  } else {
+    btn.style.background="#c40018";
+    btn.innerHTML="✅ Tôi đã đọc xong – Xác nhận hoàn thành";
+  }
+}
+
+function showLearnConfirm(){
+  if(!currentModuleId) return;
+  const allModules=trainModules1.concat(trainModules);
+  const m=allModules.find(function(x){return x.id===currentModuleId;});
+  document.getElementById("learnConfirmModuleTitle").textContent=(m?m.icon+" "+m.title:"");
+  document.getElementById("learnConfirmPopup").style.display="flex";
+}
+
+function cancelLearnConfirm(){
+  document.getElementById("learnConfirmPopup").style.display="none";
+}
+
+function confirmLearnDone(){
+  if(!currentModuleId) return;
+  setTrainDone(currentModuleId);
+  renderTrainModules();
+  document.getElementById("learnConfirmPopup").style.display="none";
+  // Cập nhật nút
+  const btn=document.getElementById("btnConfirmLearn");
+  btn.style.background="#16a34a";
+  btn.textContent="✅ Đã hoàn thành";
+  showToast("🎉 Đã lưu tiến trình hoàn thành bài học!");
+}
+
 function closePdfViewer(){
   document.getElementById("pdfViewer").style.display="none";
   document.getElementById("pdfFrame").src="";
+  document.getElementById("learnConfirmPopup").style.display="none";
+  currentModuleId=null;
 }
- 
+
+/* ===== TRAINING: RESET TIẾN TRÌNH ===== */
+function askResetTrain(){
+  document.getElementById("trainResetConfirm").style.display="flex";
+}
+function confirmResetTrain(){
+  localStorage.removeItem(trainKey);
+  document.getElementById("trainResetConfirm").style.display="none";
+  renderTrainModules();
+  showToast("Đã reset tiến trình học viên ✓");
+}
+
 /* ===== TRAINING: ĐIỀU HƯỚNG ===== */
 function showTrainRole(role){
   if(role==="staff"){ showToast("Nội dung đang được chuẩn bị, sắp ra mắt!"); return; }
@@ -491,7 +612,7 @@ function backToRolePage(){
   document.getElementById("trainManagerPage").classList.add("hidden");
   document.getElementById("trainRolePage").classList.remove("hidden");
 }
- 
+
 /* ===== NAVIGATION ===== */
 function toggleMenu(){ document.getElementById("sidebar").classList.toggle("active"); document.getElementById("overlay").classList.toggle("active"); }
 function stopAllScanner(){ if(qr){ qr.stop().then(function(){qr.clear();}).catch(function(){}); qr=null; } if(qr2){ qr2.stop().then(function(){qr2.clear();}).catch(function(){}); qr2=null; } isScanning=false; }
@@ -499,14 +620,14 @@ function showMain(){ stopAllScanner(); document.getElementById("mainApp").classL
 function showPrint(){ stopAllScanner(); document.getElementById("mainApp").classList.add("hidden"); document.getElementById("printApp").classList.remove("hidden"); document.getElementById("toolApp").classList.add("hidden"); document.getElementById("trainingApp").classList.add("hidden"); document.getElementById("headerTitle").textContent="IN BẢNG GIÁ QUẦY"; toggleMenu(); }
 function showTool(){ stopAllScanner(); document.getElementById("mainApp").classList.add("hidden"); document.getElementById("printApp").classList.add("hidden"); document.getElementById("toolApp").classList.remove("hidden"); document.getElementById("trainingApp").classList.add("hidden"); document.getElementById("headerTitle").textContent="TRA CỨU NGHIỆP VỤ"; backTool(); toggleMenu(); }
 function showTraining(){ stopAllScanner(); document.getElementById("mainApp").classList.add("hidden"); document.getElementById("printApp").classList.add("hidden"); document.getElementById("toolApp").classList.add("hidden"); document.getElementById("trainingApp").classList.remove("hidden"); document.getElementById("headerTitle").textContent="ĐÀO TẠO THỰC HÀNH"; document.getElementById("trainRolePage").classList.remove("hidden"); document.getElementById("trainManagerPage").classList.add("hidden"); toggleMenu(); }
- 
+
 /* ===== AUTO CLEAN ===== */
 function autoCleanExpired(){ let data=JSON.parse(localStorage.getItem(historyKey)||"[]"); if(!data.length) return; const today=new Date(); today.setHours(0,0,0,0); const filtered=data.filter(function(item){ if(!item.HSD) return true; const h=new Date(item.HSD); if(isNaN(h)) return true; h.setHours(0,0,0,0); return h>=today; }); if(filtered.length!==data.length) localStorage.setItem(historyKey,JSON.stringify(filtered)); }
- 
+
 /* ===== SCAN ===== */
 async function startScan(){ if(isIOS()){ alert("⚠️ iPhone không hỗ trợ quét barcode.\nVui lòng nhập tay."); return; } if(isScanning) return; isScanning=true; if(qr){ try{ await qr.stop(); await qr.clear(); }catch(e){} qr=null; } const r=document.getElementById("reader"); r.innerHTML='<div class="scan-frame"><div class="scan-line"></div></div>'; r.classList.remove("hidden"); qr=new Html5Qrcode("reader"); qr.start({facingMode:"environment"},scanCfg,function(code){ barcode.value=code; qr.stop().then(function(){ qr.clear(); qr=null; r.classList.add("hidden"); isScanning=false; }); },function(){}).catch(function(){ isScanning=false; r.classList.add("hidden"); }); }
 async function startPrintScan(){ if(isIOS()){ alert("⚠️ Thiết bị iOS không hỗ trợ quét barcode."); return; } if(isScanning) return; isScanning=true; if(qr2){ try{ await qr2.stop(); await qr2.clear(); }catch(e){} qr2=null; } const r=document.getElementById("printReader"); r.innerHTML='<div class="scan-frame"><div class="scan-line"></div></div>'; r.classList.remove("hidden"); qr2=new Html5Qrcode("printReader"); qr2.start({facingMode:"environment"},scanCfg,function(code){ addBarcode(code); qr2.stop().then(function(){ qr2.clear(); qr2=null; r.classList.add("hidden"); isScanning=false; }); }).catch(function(){ isScanning=false; r.classList.add("hidden"); }); }
- 
+
 /* ===== HSD CALCULATOR ===== */
 function addPeriod(date,value,unit){ const d=new Date(date); if(unit==="day") d.setDate(d.getDate()+value); if(unit==="month"){ const dy=d.getDate(); d.setMonth(d.getMonth()+value); if(d.getDate()<dy) d.setDate(0); } if(unit==="year") d.setFullYear(d.getFullYear()+value); return d; }
 function changeCalcMode(){ const mode=document.getElementById("calcMode").value; ["nsxBlock","hsdBlock","beforeHsdBlock","nsxPeriodBlock"].forEach(function(id){document.getElementById(id).classList.add("hidden");}); if(mode==="full"){ document.getElementById("nsxBlock").classList.remove("hidden"); document.getElementById("hsdBlock").classList.remove("hidden"); } if(mode==="hsdBack"){ document.getElementById("hsdBlock").classList.remove("hidden"); document.getElementById("beforeHsdBlock").classList.remove("hidden"); } if(mode==="nsxPeriod"){ document.getElementById("nsxBlock").classList.remove("hidden"); document.getElementById("nsxPeriodBlock").classList.remove("hidden"); } }
@@ -522,66 +643,57 @@ function confirmDeleteHistory(){ localStorage.removeItem(historyKey); renderDash
 function closeConfirmPopup(){ const b=document.getElementById("confirmBox"); b.classList.add("hidden"); b.classList.remove("flex"); }
 function exportExcel(){ const h=JSON.parse(localStorage.getItem(historyKey)||"[]"); if(!h.length){ alert("Không có dữ liệu"); return; } const ws=XLSX.utils.json_to_sheet(h.map(function(x){ return {"Tên SP":x.TenSP||"","Barcode":x.Barcode||"","NSX":new Date(x.NSX).toLocaleDateString("vi-VN"),"HSD":new Date(x.HSD).toLocaleDateString("vi-VN"),"Mốc 30%":new Date(x.M30).toLocaleDateString("vi-VN"),"Mốc 20%":new Date(x.M20).toLocaleDateString("vi-VN"),"Trạng thái 30%":x.CanhBao30,"Trạng thái 20%":x.CanhBao20,"Thời gian tính":x.ThoiGian,"Đã kiểm date":x.completed?"Đã xử lý":"Chưa xử lý"}; })); const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,"HSD"); XLSX.writeFile(wb,"saigoncoop_hsd.xlsx"); showPopup("export"); }
 function resetForm(){ productName.value=""; barcode.value=""; nsx.value=""; hsd.value=""; beforeHsdValue.value=""; periodValue.value=""; result.innerHTML=""; }
- 
+
 /* ===== PRINT ===== */
 function addBarcode(code){ let d=JSON.parse(localStorage.getItem(printKey)||"{}"); d[code]=(d[code]||0)+1; localStorage.setItem(printKey,JSON.stringify(d)); renderPrint(); }
 function renderPrint(){ const d=JSON.parse(localStorage.getItem(printKey)||"{}"); printHistory.innerHTML=Object.entries(d).map(function(e){ return '<div class="chat-item">'+e[0]+','+e[1]+'</div>'; }).join(""); }
 function clearPrintHistory(){ localStorage.removeItem(printKey); renderPrint(); }
 function exportText(){ const d=JSON.parse(localStorage.getItem(printKey)||"{}"); if(!Object.keys(d).length){ alert("Không có dữ liệu"); return; } const blob=new Blob([Object.entries(d).map(function(e){return e[0]+","+e[1];}).join("\n")],{type:"text/plain;charset=utf-8"}); const url=URL.createObjectURL(blob); const a=document.createElement("a"); a.href=url; a.download="barcode_print.txt"; document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url); localStorage.removeItem(printKey); renderPrint(); showPopup("export"); }
- 
+
 /* ===== POPUP ===== */
 function showPopup(type){ if(isPopupShowing) return; isPopupShowing=true; const popup=document.getElementById("alertPopup"),box=document.getElementById("popupBox"),title=document.getElementById("popupTitle"),msg=document.getElementById("popupMsg"); box.className="bg-white p-5 rounded-xl w-[90%] max-w-sm text-center"; if(type==="20"){ title.innerText="CẢNH BÁO MỐC 20%"; msg.innerText="Rút hàng khỏi quầy ngay."; box.classList.add("popup-pulse-20"); } else if(type==="30"){ title.innerText="CẢNH BÁO MỐC 30%"; msg.innerText="Báo cáo quản lý để thực hiện giải tồn."; box.classList.add("popup-pulse-30"); } else if(type==="export"){ title.innerText="XUẤT FILE THÀNH CÔNG"; msg.innerText="Dữ liệu đã được tải về."; } popup.style.display="flex"; if(type==="export") setTimeout(closePopup,2500); }
 function closePopup(){ document.getElementById("alertPopup").style.display="none"; isPopupShowing=false; }
- 
+
 /* ===== CHECK DATE POPUP ===== */
 function checkStoredProducts(){ let data=JSON.parse(localStorage.getItem(historyKey)||"[]"); if(!Array.isArray(data)||!data.length){ closeCheckDatePopup(); return; } const today=new Date(); today.setHours(0,0,0,0); const warn=data.filter(function(item){ if(item.completed===true) return false; const m30=new Date(item.M30); if(!m30||isNaN(m30)) return false; m30.setHours(0,0,0,0); const b=new Date(m30); b.setDate(b.getDate()-15); const a=new Date(m30); a.setDate(a.getDate()+10); return today>=b&&today<=a; }); if(warn.length) showCheckDatePopup(warn); else closeCheckDatePopup(); }
 function showCheckDatePopup(list){ isPopupShowing=true; const box=document.getElementById("checkDateBox"),container=document.getElementById("checkDateList"),inner=document.getElementById("checkDateInner"); inner.classList.remove("checkdate-pulse"); if(!list||!list.length){ closeCheckDatePopup(); return; } container.innerHTML=list.map(function(item){ return '<div class="border p-2 rounded"><div><b>'+(item.TenSP||"-")+'</b></div><div>Ngưỡng 30%: '+new Date(item.M30).toLocaleDateString("vi-VN")+'</div><div>HSD: '+new Date(item.HSD).toLocaleDateString("vi-VN")+'</div><button onclick="completeProduct('+item.id+')" class="mt-2 bg-red-600 text-white px-3 py-1 rounded text-sm">HOÀN THÀNH</button></div>'; }).join(""); inner.classList.add("checkdate-pulse"); box.style.display="flex"; }
 function completeProduct(id){ let data=JSON.parse(localStorage.getItem(historyKey)||"[]"); data=data.map(function(item){ return item.id===id?Object.assign({},item,{completed:true}):item; }); localStorage.setItem(historyKey,JSON.stringify(data)); const today=new Date(); today.setHours(0,0,0,0); const warn=data.filter(function(item){ if(item.completed) return false; const m30=new Date(item.M30); if(isNaN(m30)) return false; m30.setHours(0,0,0,0); const b=new Date(m30); b.setDate(b.getDate()-15); const a=new Date(m30); a.setDate(a.getDate()+10); return today>=b&&today<=a; }); if(warn.length>0) showCheckDatePopup(warn); else closeCheckDatePopup(); autoCleanExpired(); renderDashboard(); renderHistory(); showToast("Đã xử lý sản phẩm"); }
 function closeCheckDatePopup(){ const box=document.getElementById("checkDateBox"),inner=document.getElementById("checkDateInner"); inner.classList.remove("checkdate-pulse"); box.style.display="none"; isPopupShowing=false; }
 function showToast(msg){ const t=document.getElementById("toastBox"); t.innerText=msg; t.classList.add("show"); setTimeout(function(){t.classList.remove("show");},2500); }
- 
+
 /* ===== TOOL NAV ===== */
 function openTool(name){ document.getElementById("toolMenu").style.display="none"; document.querySelectorAll(".tool-box").forEach(function(e){e.classList.remove("active");}); document.getElementById("tool"+name.charAt(0).toUpperCase()+name.slice(1)).classList.add("active"); }
 function backTool(){ document.getElementById("toolMenu").style.display="grid"; document.querySelectorAll(".tool-box").forEach(function(e){e.classList.remove("active");}); }
- 
+
 /* ===== TOOL: TỈ LỆ LÃI ===== */
 function calcProfit(){ const cost=num(toolCost.value),price=num(toolPrice.value),vat=Number(toolVat.value); if(!cost||!price) return alert("Nhập dữ liệu"); const pnv=price/(1+vat/100); profitResult.innerHTML="<b>Tỉ lệ lãi:</b> "+((pnv-cost)/pnv*100).toFixed(2)+" %"; }
 function resetProfit(){ toolCost.value=""; toolPrice.value=""; profitResult.innerHTML=""; }
- 
+
 /* ===== TOOL: TÍNH GIÁ SẢN PHẨM ===== */
 function toggleCostVatBlock(){ const mode=document.getElementById("toolMode2").value; document.getElementById("costVatTypeBlock").classList.toggle("hidden",mode!=="cost"); }
 function toggleCostVatDetail(){ const type=document.getElementById("toolCostVatType").value; document.getElementById("costVatDetail").classList.toggle("hidden",type!=="include"); }
 function calcProduct(){ const profitPct=Number(document.getElementById("toolProfit2").value),vatSell=Number(document.getElementById("toolVat2").value),mode=document.getElementById("toolMode2").value,val=num(document.getElementById("toolValue2").value); if(!profitPct||!val) return alert("Vui lòng nhập đầy đủ dữ liệu"); if(profitPct<=0||profitPct>=100) return alert("Tỉ lệ lãi phải trong khoảng 0% – 100%"); const margin=profitPct/100; if(mode==="cost"){ const costVatType=document.getElementById("toolCostVatType").value,vatCost=Number(document.getElementById("toolCostVat").value||0); const costExVat=(costVatType==="include")?val/(1+vatCost/100):val; const sellNoVat=costExVat/(1-margin),sellWithVat=sellNoVat*(1+vatSell/100),marginReal=((sellNoVat-costExVat)/sellNoVat*100).toFixed(2); document.getElementById("productResult").innerHTML='<div class="border rounded-lg p-3 bg-gray-50 space-y-1 mt-2"><div class="text-xs text-gray-400 font-semibold uppercase tracking-wide mb-1">Kết quả</div><div>📥 Giá vốn (chưa VAT): <b>'+money(Math.round(costExVat))+' đ</b></div><div>🏷 Giá bán (chưa VAT): <b>'+money(Math.round(sellNoVat))+' đ</b></div><div class="pt-1 text-base">💰 Giá bán (có VAT '+vatSell+'%): <b class="text-red-600">'+money(Math.round(sellWithVat))+' đ</b></div><div class="text-green-700 text-xs pt-1 border-t mt-1">✔ Tỉ lệ lãi thực: '+marginReal+'%</div></div>'; } else { const sellNoVat=val/(1+vatSell/100),costExVat=sellNoVat*(1-margin),marginReal=((sellNoVat-costExVat)/sellNoVat*100).toFixed(2); document.getElementById("productResult").innerHTML='<div class="border rounded-lg p-3 bg-gray-50 space-y-1 mt-2"><div class="text-xs text-gray-400 font-semibold uppercase tracking-wide mb-1">Kết quả</div><div>💰 Giá bán (có VAT '+vatSell+'%): <b>'+money(Math.round(val))+' đ</b></div><div>🏷 Giá bán (chưa VAT): <b>'+money(Math.round(sellNoVat))+' đ</b></div><div class="pt-1 text-base">📥 Giá vốn (chưa VAT): <b class="text-red-600">'+money(Math.round(costExVat))+' đ</b></div><div class="text-green-700 text-xs pt-1 border-t mt-1">✔ Tỉ lệ lãi thực: '+marginReal+'%</div></div>'; } }
 function resetProduct(){ document.getElementById("toolProfit2").value=""; document.getElementById("toolValue2").value=""; document.getElementById("productResult").innerHTML=""; document.getElementById("toolCostVatType").value="exclude"; document.getElementById("toolCostVat").value="0"; document.getElementById("costVatDetail").classList.add("hidden"); }
- 
+
 /* ===== TOOL: GIỮ NGUYÊN LÃI ===== */
 function calcKeep(){ const price=num(keepPrice.value),profit=Number(keepProfit.value)/100,qty=Number(keepQty.value),discount=Number(keepDiscount.value)/100; if(!price||!profit||!qty) return alert("Nhập dữ liệu"); const pa=price*(1-discount),nq=qty*(price/pa); keepResult.innerHTML="Giá sau giảm: <b>"+money(pa)+" đ</b><br>Cần bán: <b>"+Math.ceil(nq)+"</b> sản phẩm"; }
 function resetKeep(){ keepPrice.value=""; keepProfit.value=""; keepQty.value=""; keepDiscount.value=""; keepResult.innerHTML=""; }
- 
+
 /* ===== TOOL: VÒNG QUAY ===== */
 function calcInventory(){ const sales=num(invSales.value),stock=num(invStock.value),period=invPeriod.value; if(!sales||!stock) return alert("Nhập dữ liệu"); const turn=sales/stock,exp=period==="month"?"~ "+(30/turn).toFixed(1)+" ngày / vòng":"~ "+(365/turn).toFixed(1)+" ngày / vòng"; inventoryResult.innerHTML="Vòng quay: <b>"+turn.toFixed(2)+"</b><br>"+exp; }
 function resetInventory(){ invSales.value=""; invStock.value=""; inventoryResult.innerHTML=""; }
- 
+
 /* ===== TOOL: PROMO ===== */
 function calcPromoProfit(){ const cost=num(promoCost.value),disc=Number(promoDiscount.value)/100,price=num(promoPrice.value),vat=Number(promoVat.value)/100; if(!cost||!price) return alert("Nhập dữ liệu"); const ca=cost*(1-disc),pnv=price/(1+vat),profit=((pnv-ca)/pnv)*100; promoResult.innerHTML="Giá vốn sau KM: <b>"+money(ca)+" đ</b><br>Giá bán chưa VAT: <b>"+money(pnv)+" đ</b><br>Tỉ lệ lãi: <b>"+profit.toFixed(2)+" %</b>"; }
 function resetPromo(){ promoCost.value=""; promoDiscount.value=""; promoPrice.value=""; promoResult.innerHTML=""; }
- 
+
 /* ===== TOOL: DISCOUNT RISK ===== */
 function calcDiscountRisk(){ const cost=num(riskCost.value),margin=Number(riskMargin.value)/100,discount=Number(riskDiscount.value)/100; if(!cost||!margin) return alert("Nhập dữ liệu"); const price=cost/(1-margin),pa=price*(1-discount),mn=(pa-cost)/pa,ni=margin/mn; let warn=""; if(mn<0.1) warn="<span style='color:red;font-weight:bold'>⚠️ RẤT NGUY HIỂM</span>"; else if(mn<0.2) warn="<span style='color:#f97316;font-weight:bold'>⚠️ Lợi nhuận giảm mạnh</span>"; else warn="<span style='color:green'>An toàn</span>"; riskResult.innerHTML="Giá bán chuẩn: <b>"+money(price)+" đ</b><br>Giá sau giảm: <b>"+money(pa)+" đ</b><br>Margin còn lại: <b>"+(mn*100).toFixed(2)+" %</b><br>Số lượng cần tăng: <b>"+(ni*100-100).toFixed(1)+" %</b><br>"+warn; }
 function resetDiscountRisk(){ riskCost.value=""; riskMargin.value=""; riskDiscount.value=""; riskResult.innerHTML=""; }
- 
+
 /* ===== BLUR FORMAT ===== */
 ["toolCost","toolPrice","toolValue2","keepPrice","invSales","invStock","promoCost","promoPrice","riskCost"].forEach(function(id){ const el=document.getElementById(id); if(el) el.addEventListener("blur",function(){ let v=el.value.replace(/\./g,"").replace(/,/g,"."); if(v&&!isNaN(v)) el.value=Number(v).toLocaleString("vi-VN"); }); });
- // CHẶN CHUỘT PHẢI PDF
-document.addEventListener("contextmenu", function(e){
 
-  const pdfViewer = document.getElementById("pdfViewer");
-
-  if(pdfViewer.style.display === "flex"){
-    e.preventDefault();
-  }
-
-});
 /* ===== INIT ===== */
 changeCalcMode();
 autoCleanExpired();
