@@ -135,7 +135,6 @@ body{background:#f3f4f6}
     <button onclick="showPrint()" class="w-full text-left px-3 py-2 rounded bg-slate-100">🖨 In bảng giá quầy</button>
     <button onclick="showTool()" class="w-full text-left px-3 py-2 rounded bg-slate-100">📊 Tra cứu nghiệp vụ</button>
     <button onclick="showTraining()" class="w-full text-left px-3 py-2 rounded bg-slate-100">🎓 Đào tạo thực hành</button>
-    <button onclick="showEval()" class="w-full text-left px-3 py-2 rounded bg-slate-100">📝 Đánh giá thực hành</button>
   </div>
 </div>
 <div id="overlay" onclick="toggleMenu()"></div>
@@ -446,128 +445,8 @@ body{background:#f3f4f6}
 
 </div>
 
-<!-- ================= EVAL APP ================= -->
+<!-- ================= EVAL APP (ẩn tạm thời) ================= -->
 <div id="evalApp" class="hidden space-y-3 pb-6">
-
-  <!-- HEADER -->
-  <div style="background:linear-gradient(135deg,#1e3a5f,#2563eb);border-radius:14px;padding:16px;color:#fff;text-align:center">
-    <div style="font-size:11px;opacity:.8;margin-bottom:4px">Liên hiệp HTX TM Tp. Hồ Chí Minh – Trung tâm Huấn luyện Nghiệp vụ</div>
-    <div style="font-weight:700;font-size:16px;line-height:1.3">PHIẾU ĐÁNH GIÁ KẾT QUẢ<br>ĐÀO TẠO THỰC HÀNH / THỰC TẬP</div>
-    <div style="font-size:11px;opacity:.7;margin-top:4px">Nhân viên bán hàng – Co.op Food &nbsp;|&nbsp; Mã: CF-NVBH</div>
-  </div>
-
-  <!-- THÔNG TIN HỌC VIÊN -->
-  <div class="card p-4 space-y-3">
-    <div style="font-weight:700;font-size:13px;color:#374151;text-transform:uppercase;letter-spacing:.5px">📋 Thông tin học viên</div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-      <div>
-        <div style="font-size:11px;color:#6b7280;font-weight:600;margin-bottom:3px">Họ tên</div>
-        <input id="ev_hoTen" class="border p-2 rounded w-full text-sm" placeholder="Nguyễn Văn A">
-      </div>
-      <div>
-        <div style="font-size:11px;color:#6b7280;font-weight:600;margin-bottom:3px">Mã số HV</div>
-        <input id="ev_maSo" class="border p-2 rounded w-full text-sm" placeholder="HV001">
-      </div>
-      <div>
-        <div style="font-size:11px;color:#6b7280;font-weight:600;margin-bottom:3px">Chức danh thực tập</div>
-        <input id="ev_chucDanh" class="border p-2 rounded w-full text-sm" placeholder="Nhân viên bán hàng">
-      </div>
-      <div>
-        <div style="font-size:11px;color:#6b7280;font-weight:600;margin-bottom:3px">Ngày thực tập</div>
-        <input id="ev_ngay" class="border p-2 rounded w-full text-sm" placeholder="01/01/2025">
-      </div>
-      <div>
-        <div style="font-size:11px;color:#6b7280;font-weight:600;margin-bottom:3px">Đơn vị công tác (dự kiến)</div>
-        <input id="ev_dvCT" class="border p-2 rounded w-full text-sm" placeholder="Saigon Co.op">
-      </div>
-      <div>
-        <div style="font-size:11px;color:#6b7280;font-weight:600;margin-bottom:3px">Đơn vị thực tập</div>
-        <input id="ev_dvTT" class="border p-2 rounded w-full text-sm" placeholder="Co.opmart Quận 1">
-      </div>
-    </div>
-  </div>
-
-  <!-- THANG ĐIỂM -->
-  <div class="card p-3">
-    <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:4px;text-align:center;font-size:11px">
-      <div style="background:#f3e8ff;border-radius:8px;padding:6px"><div style="font-weight:700;color:#7c3aed">9–10</div><div style="color:#6d28d9">Xuất sắc</div></div>
-      <div style="background:#dcfce7;border-radius:8px;padding:6px"><div style="font-weight:700;color:#16a34a">8–&lt;9</div><div style="color:#15803d">Giỏi</div></div>
-      <div style="background:#fef9c3;border-radius:8px;padding:6px"><div style="font-weight:700;color:#ca8a04">7–&lt;8</div><div style="color:#a16207">Khá</div></div>
-      <div style="background:#ffedd5;border-radius:8px;padding:6px"><div style="font-weight:700;color:#ea580c">6–&lt;7</div><div style="color:#c2410c">Trung bình</div></div>
-      <div style="background:#fee2e2;border-radius:8px;padding:6px"><div style="font-weight:700;color:#dc2626">0–&lt;6</div><div style="color:#b91c1c">Yếu</div></div>
-    </div>
-    <div style="font-size:11px;color:#d97706;background:#fffbeb;border-radius:6px;padding:6px 8px;margin-top:6px">
-      ⚠️ Ghi rõ lý do với các tiêu chí &lt; 6 điểm
-    </div>
-  </div>
-
-  <!-- PHẦN I -->
-  <div class="card p-3">
-    <div style="background:#1e3a5f;color:#fff;border-radius:8px;padding:6px 12px;font-weight:700;font-size:13px;margin-bottom:10px">I/ NGHIỆP VỤ CHUYÊN MÔN</div>
-    <div id="ev_rows_I"></div>
-  </div>
-
-  <!-- PHẦN II -->
-  <div class="card p-3">
-    <div style="background:#1e3a5f;color:#fff;border-radius:8px;padding:6px 12px;font-weight:700;font-size:13px;margin-bottom:10px">II/ THÁI ĐỘ GIAO TIẾP VÀ HỖ TRỢ</div>
-    <div id="ev_rows_II"></div>
-  </div>
-
-  <!-- PHẦN III -->
-  <div class="card p-3">
-    <div style="background:#1e3a5f;color:#fff;border-radius:8px;padding:6px 12px;font-weight:700;font-size:13px;margin-bottom:10px">III/ CHẤP HÀNH NỘI QUY, QUY ĐỊNH CỦA ĐƠN VỊ</div>
-    <div id="ev_rows_III"></div>
-  </div>
-
-  <!-- TỔNG ĐIỂM -->
-  <div style="background:linear-gradient(135deg,#1e3a5f,#2563eb);border-radius:14px;padding:16px;color:#fff">
-    <div style="font-size:12px;opacity:.8;margin-bottom:6px">TỔNG ĐIỂM (Tỷ trọng = 1.00)</div>
-    <div style="display:flex;align-items:flex-end;gap:16px">
-      <div>
-        <div style="font-size:11px;opacity:.7">Người hướng dẫn</div>
-        <div id="ev_totalNHD" style="font-size:38px;font-weight:900;line-height:1">–</div>
-      </div>
-      <div>
-        <div style="font-size:11px;opacity:.7">Học viên tự ĐG</div>
-        <div id="ev_totalHV" style="font-size:22px;font-weight:700;opacity:.85">–</div>
-      </div>
-      <div style="margin-left:auto">
-        <div id="ev_ratingBadge" style="padding:6px 14px;border-radius:999px;font-weight:700;font-size:14px;background:rgba(255,255,255,.2)">–</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- NHẬN XÉT -->
-  <div class="card p-4 space-y-3">
-    <div style="font-weight:700;font-size:13px;color:#374151;text-transform:uppercase;letter-spacing:.5px">💬 Nhận xét của người hướng dẫn</div>
-    <div>
-      <div style="font-size:12px;font-weight:600;color:#374151;margin-bottom:4px">a. Ưu điểm</div>
-      <textarea id="ev_uuDiem" class="border rounded w-full p-2 text-sm" rows="3" placeholder="Nhập ưu điểm…" style="resize:vertical"></textarea>
-    </div>
-    <div>
-      <div style="font-size:12px;font-weight:600;color:#374151;margin-bottom:4px">b. Khuyết điểm</div>
-      <textarea id="ev_khuyetDiem" class="border rounded w-full p-2 text-sm" rows="3" placeholder="Nhập khuyết điểm…" style="resize:vertical"></textarea>
-    </div>
-    <div>
-      <div style="font-size:12px;font-weight:600;color:#374151;margin-bottom:4px">c. Hướng khắc phục</div>
-      <textarea id="ev_huongKP" class="border rounded w-full p-2 text-sm" rows="3" placeholder="Nhập hướng khắc phục…" style="resize:vertical"></textarea>
-    </div>
-    <div>
-      <div style="font-size:12px;font-weight:600;color:#374151;margin-bottom:4px">Ngày đánh giá</div>
-      <input id="ev_ngayDG" class="border p-2 rounded text-sm" style="width:180px" placeholder="VD: 15/01/2025">
-    </div>
-  </div>
-
-  <!-- NÚT XUẤT + RESET -->
-  <div style="display:flex;gap:10px">
-    <button onclick="ev_exportExcel()" class="brand-bg text-white font-bold py-4 rounded-xl text-sm flex-1 flex items-center justify-center gap-2">
-      📥 Xuất Excel (.xlsx)
-    </button>
-    <button onclick="ev_resetForm()" style="background:#e5e7eb;color:#374151;font-weight:600;padding:0 18px;border-radius:12px;border:none;cursor:pointer;font-size:13px">
-      🔄 Nhập lại
-    </button>
-  </div>
-
 </div>
 
 <!-- CONFIRM XÓA -->
@@ -804,14 +683,12 @@ function stopAllScanner(){
   if(qr){ qr.stop().then(function(){qr.clear();}).catch(function(){}); qr=null; }
   if(qr2){ qr2.stop().then(function(){qr2.clear();}).catch(function(){}); qr2=null; }
   isScanning=false;
-  // Ẩn khung camera
   var r=document.getElementById("reader"); if(r){ r.classList.add("hidden"); r.innerHTML=""; }
   var r2=document.getElementById("printReader"); if(r2){ r2.classList.add("hidden"); r2.innerHTML=""; }
 }
 
 function showMain(){
   stopAllScanner();
-  // Reset toàn bộ form HSD về trạng thái ban đầu
   document.getElementById("productName").value="";
   document.getElementById("barcode").value="";
   document.getElementById("nsx").value="";
@@ -885,10 +762,8 @@ async function startScan(){ if(isIOS()){ alert("⚠️ iPhone không hỗ trợ 
 async function startPrintScan(){ if(isIOS()){ alert("⚠️ Thiết bị iOS không hỗ trợ quét barcode."); return; } if(isScanning) return; isScanning=true; if(qr2){ try{ await qr2.stop(); await qr2.clear(); }catch(e){} qr2=null; } const r=document.getElementById("printReader"); r.innerHTML='<div class="scan-frame"><div class="scan-line"></div></div>'; r.classList.remove("hidden"); qr2=new Html5Qrcode("printReader"); qr2.start({facingMode:"environment"},scanCfg,function(code){ addBarcode(code); qr2.stop().then(function(){ qr2.clear(); qr2=null; r.classList.add("hidden"); isScanning=false; }); }).catch(function(){ isScanning=false; r.classList.add("hidden"); }); }
 
 /* ===== HSD CALCULATOR ===== */
-
-// Auto-mask nn/mm/yyyy — xử lý gõ vào và xóa
 function dateMask(el){
-  var raw = el.value.replace(/\D/g,'');  // chỉ giữ số
+  var raw = el.value.replace(/\D/g,'');
   if(raw.length > 8) raw = raw.substring(0,8);
   var out = '';
   if(raw.length === 0){ el.value=''; return; }
@@ -902,33 +777,27 @@ function dateMask(el){
   el.value = out;
 }
 
-// Xử lý keydown: cho phép backspace xóa tự nhiên qua dấu /
 function dateMaskKey(el, e){
   var key = e.key;
-  // Cho phép: Backspace, Delete, Tab, mũi tên, Ctrl+A/C/V/X
   if(['Backspace','Delete','Tab','ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].indexOf(key)!==-1) return;
   if((e.ctrlKey||e.metaKey) && ['a','c','v','x'].indexOf(key.toLowerCase())!==-1) return;
-  // Chỉ cho phép nhập số
   if(!/^\d$/.test(key)){ e.preventDefault(); return; }
-  // Không cho nhập quá 8 chữ số
   var digits = el.value.replace(/\D/g,'');
   if(digits.length >= 8){ e.preventDefault(); }
 }
 
-// Parse dd/mm/yyyy → Date object (trả null nếu không hợp lệ)
 function parseDMY(str){
   if(!str || str.length < 10) return null;
   var parts = str.split('/');
   if(parts.length !== 3) return null;
   var d = parseInt(parts[0],10);
-  var m = parseInt(parts[1],10) - 1; // month 0-based
+  var m = parseInt(parts[1],10) - 1;
   var y = parseInt(parts[2],10);
   if(isNaN(d)||isNaN(m)||isNaN(y)) return null;
   if(y < 1900 || y > 2100) return null;
   if(m < 0 || m > 11) return null;
   if(d < 1 || d > 31) return null;
   var dt = new Date(y, m, d);
-  // Kiểm tra ngày có thực sự tồn tại không (VD: 31/02)
   if(dt.getDate()!==d || dt.getMonth()!==m || dt.getFullYear()!==y) return null;
   return dt;
 }
@@ -1030,204 +899,9 @@ function resetPromo(){ promoCost.value=""; promoDiscount.value=""; promoPrice.va
 function calcDiscountRisk(){ const cost=num(riskCost.value),margin=Number(riskMargin.value)/100,discount=Number(riskDiscount.value)/100; if(!cost||!margin) return alert("Nhập dữ liệu"); const price=cost/(1-margin),pa=price*(1-discount),mn=(pa-cost)/pa,ni=margin/mn; let warn=""; if(mn<0.1) warn="<span style='color:red;font-weight:bold'>⚠️ RẤT NGUY HIỂM</span>"; else if(mn<0.2) warn="<span style='color:#f97316;font-weight:bold'>⚠️ Lợi nhuận giảm mạnh</span>"; else warn="<span style='color:green'>An toàn</span>"; riskResult.innerHTML="Giá bán chuẩn: <b>"+money(price)+" đ</b><br>Giá sau giảm: <b>"+money(pa)+" đ</b><br>Margin còn lại: <b>"+(mn*100).toFixed(2)+" %</b><br>Số lượng cần tăng: <b>"+(ni*100-100).toFixed(1)+" %</b><br>"+warn; }
 function resetDiscountRisk(){ riskCost.value=""; riskMargin.value=""; riskDiscount.value=""; riskResult.innerHTML=""; }
 
-/* ===== ĐÁNH GIÁ THỰC HÀNH – NVBH CO.OP FOOD ===== */
-const evCriteria = {
-  "I": [
-    { stt:1, nd:"Kiểm tra hạn sử dụng:\n– Kiểm tra hạn sử dụng đủ điều kiện kinh doanh.", tt:0.1 },
-    { stt:2, nd:"Bổ sung hàng ra quầy và loại bỏ hàng không phù hợp:\n– Xác định mặt hàng cần bổ sung.\n– Đảm bảo hàng đầy đủ, không có hàng cận/hết hạn trên quầy.\n– Kiểm soát và bảo quản hàng đổi/trả NCC.\n– Loại bỏ hàng không phù hợp, ghi nhận đúng biểu mẫu.\n– Lập phiếu đề xuất hủy hàng đúng ngày phát sinh.", tt:0.1 },
-    { stt:3, nd:"Kiểm nhận hàng hoá và chất xếp hàng hóa trong kho:\n– Kiểm tra hóa đơn chứng từ.\n– Đối chiếu hóa đơn, kiểm tra hàng đầu vào (SL, CL, nhiệt độ, nhãn...).\n– Ký nhận và ghi nhận biểu mẫu theo quy định.\n– Chất xếp hàng đúng nguyên tắc và quy định.", tt:0.1 },
-    { stt:4, nd:"Trưng bày hàng hóa:\n– Kiểm tra hàng trước khi trưng bày (bao bì, HSD).\n– Trưng bày đúng nguyên tắc kỹ thuật (line hàng, ụ KM, nguyên tắc 1 chiều tủ mát/đông).\n– Dàn hàng và kiểm tra bảng giá, bảng KM đúng quy định.", tt:0.1 },
-    { stt:5, nd:"Kiến thức hàng hóa và tư vấn bán hàng:\n– Nắm đặc tính, công dụng ngành hàng TPCN và phi TP.\n– Chủ động tiếp xúc, tư vấn khách hàng.\n– Nắm các chương trình KM, tư vấn bán thêm/bán chéo.", tt:0.1 },
-    { stt:6, nd:"Nghiệp vụ thu ngân:\n– Thực hiện công việc đầu ca/cuối ca: chuẩn bị quầy, nhận tiền lẻ từ TQHC, kê tiền bán hàng, nộp tiền đúng quy định.\n– Tính tiền và trả tiền thừa đúng quy định.\n– Lựa chọn bao bì và đóng gói hàng hóa đúng quy định.", tt:0.1 },
-    { stt:7, nd:"Chương trình tính tiền (TOPOS):\n– Nhập mã thẻ KH, mã hàng, phân biệt mã lốc/lẻ.\n– Các chức năng cơ bản: tính số lượng, in lại hóa đơn...\n– Thanh toán: tiền mặt, PMH, thẻ ngân hàng, Momo...\n– Giải quyết tình huống tại quầy thu ngân.", tt:0.1 },
-    { stt:8, nd:"Thực hiện sơ chế biến:\n– Sơ chế sản phẩm đúng quy định, theo công thức Setcode, điều chỉnh tồn kho.\n– Đóng gói màng co gọn gàng, căng đẹp.\n– Tuân thủ bảo hộ lao động và nguyên tắc 1 chiều khu sơ chế.", tt:0.1 },
-    { stt:9, nd:"Cân hàng và bảo quản xử lý hàng tồn TPTS cuối ngày:\n– Thuộc mã cân hàng thực phẩm tươi sống: rau, củ, quả, thủy hải sản...\n– Cân và dán tem chính xác.\n– Phân loại, xử lý và bảo quản hàng tồn đúng quy định.", tt:0.05 }
-  ],
-  "II": [
-    { stt:1, nd:"– Thực hành Quy tắc ứng xử (5C) trong giao tiếp và phục vụ.\n– Chủ động nhiệt tình hỗ trợ khách hàng.\n– Giao tiếp hòa nhã với đồng nghiệp, không gây mất đoàn kết.\n– Thao tác nhanh nhẹn, linh hoạt.", tt:0.1 }
-  ],
-  "III": [
-    { stt:1, nd:"– Tuân thủ ca/giờ làm việc, nghỉ giữa ca theo phân công.\n– Đảm bảo số ngày công làm việc.\n– Tác phong nghiêm túc, đồng phục đúng quy định.", tt:0.05 }
-  ]
-};
-
-function ev_renderRows(sec, containerId){
-  var el = document.getElementById(containerId);
-  el.innerHTML = evCriteria[sec].map(function(item, i){
-    var id = "ev_"+sec+"_"+i;
-    return '<div style="border:1px solid #f1f5f9;border-radius:10px;padding:10px;margin-bottom:8px;background:#f9fafb">'
-      +'<div style="display:flex;gap:8px;align-items:flex-start;margin-bottom:8px">'
-        +'<span style="flex-shrink:0;width:22px;height:22px;border-radius:50%;background:#c40018;color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center">'+item.stt+'</span>'
-        +'<div style="font-size:12px;color:#374151;line-height:1.5;white-space:pre-line;flex:1">'+item.nd+'</div>'
-      +'</div>'
-      +'<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding-top:6px;border-top:1px solid #e5e7eb">'
-        +'<span style="font-size:11px;color:#6b7280">Chuẩn: <b>10</b> &nbsp;|&nbsp; Tỷ trọng: <b>'+item.tt+'</b></span>'
-        +'<div style="margin-left:auto;display:flex;gap:8px;align-items:center">'
-          +'<div style="text-align:center">'
-            +'<div style="font-size:10px;color:#6b7280;margin-bottom:2px">HV tự ĐG</div>'
-            +'<input type="number" id="'+id+'_hv" min="0" max="10" step="0.1" placeholder="–"'
-            +' style="width:60px;border:2px solid #e5e7eb;border-radius:8px;padding:5px;text-align:center;font-size:14px;font-weight:700"'
-            +' oninput="ev_onInput(this,\''+id+'\')">'
-          +'</div>'
-          +'<div style="text-align:center">'
-            +'<div style="font-size:10px;color:#c40018;font-weight:700;margin-bottom:2px">NHD đánh giá ★</div>'
-            +'<input type="number" id="'+id+'_nhd" min="0" max="10" step="0.1" placeholder="–"'
-            +' style="width:60px;border:2px solid #e5e7eb;border-radius:8px;padding:5px;text-align:center;font-size:14px;font-weight:700"'
-            +' oninput="ev_onInput(this,\''+id+'\'); ev_calcTotal()">'
-          +'</div>'
-          +'<div style="text-align:center">'
-            +'<div style="font-size:10px;color:#6b7280;margin-bottom:2px">Qui đổi</div>'
-            +'<div id="'+id+'_qd" style="width:54px;font-size:13px;font-weight:700;color:#2563eb;text-align:center">–</div>'
-          +'</div>'
-        +'</div>'
-      +'</div>'
-    +'</div>';
-  }).join("");
-}
-
-ev_renderRows("I","ev_rows_I");
-ev_renderRows("II","ev_rows_II");
-ev_renderRows("III","ev_rows_III");
-
-function ev_onInput(el, id){
-  var v = parseFloat(el.value);
-  if(el.value===""||isNaN(v)){ el.style.borderColor="#e5e7eb"; el.style.background="#fff"; return; }
-  if(v<0) el.value=0; if(v>10) el.value=10;
-  el.style.borderColor = v<6?"#dc2626":"#16a34a";
-  el.style.background  = v<6?"#fff1f2":"#f0fdf4";
-  // Tính qui đổi
-  var sec=id.split("_")[1], idx=parseInt(id.split("_")[2]);
-  var item=evCriteria[sec][idx];
-  var nhd=parseFloat(document.getElementById(id+"_nhd").value);
-  if(!isNaN(nhd)) document.getElementById(id+"_qd").textContent=(nhd*item.tt).toFixed(3);
-  ev_calcTotal();
-}
-
-function ev_calcTotal(){
-  var tNHD=0, tHV=0, cNHD=0, cHV=0;
-  ["I","II","III"].forEach(function(sec){
-    evCriteria[sec].forEach(function(item,i){
-      var id="ev_"+sec+"_"+i;
-      var nhd=parseFloat(document.getElementById(id+"_nhd").value);
-      var hv =parseFloat(document.getElementById(id+"_hv").value);
-      if(!isNaN(nhd)){tNHD+=nhd*item.tt; cNHD++;}
-      if(!isNaN(hv)) {tHV +=hv *item.tt; cHV++;}
-    });
-  });
-  if(cNHD>0){
-    document.getElementById("ev_totalNHD").textContent=tNHD.toFixed(2);
-    var b=document.getElementById("ev_ratingBadge");
-    if(tNHD>=9)      {b.textContent="Xuất sắc ⭐";b.style.background="#7c3aed";}
-    else if(tNHD>=8) {b.textContent="Giỏi 🟢";   b.style.background="#16a34a";}
-    else if(tNHD>=7) {b.textContent="Khá 🟡";    b.style.background="#ca8a04";}
-    else if(tNHD>=6) {b.textContent="TB 🟠";     b.style.background="#ea580c";}
-    else             {b.textContent="Yếu 🔴";    b.style.background="#dc2626";}
-    b.style.color="#fff";
-  } else {
-    document.getElementById("ev_totalNHD").textContent="–";
-    document.getElementById("ev_ratingBadge").textContent="–";
-    document.getElementById("ev_ratingBadge").style.background="rgba(255,255,255,.2)";
-  }
-  document.getElementById("ev_totalHV").textContent=cHV>0?tHV.toFixed(2):"–";
-}
-
-function ev_exportExcel(){
-  var wb=XLSX.utils.book_new();
-  var ws={};
-  var merges=[];
-  function c(r,col,v){ ws[XLSX.utils.encode_cell({r:r-1,c:col-1})]={v:v,t:typeof v==="number"?"n":"s"}; }
-  function m(r1,c1,r2,c2){ merges.push({s:{r:r1-1,c:c1-1},e:{r:r2-1,c:c2-1}}); }
-
-  c(1,1,"Liên hiệp HTX TM Tp. Hồ Chí Minh"); c(1,8,"ĐGTT: CF-NVBH"); m(1,1,1,7);
-  c(2,1,"Trung tâm Huấn luyện Nghiệp vụ"); m(2,1,2,7);
-  c(4,1,"PHIẾU ĐÁNH GIÁ KẾT QUẢ ĐÀO TẠO THỰC HÀNH / THỰC TẬP"); m(4,1,4,8);
-
-  var ht=document.getElementById("ev_hoTen").value||"…………………";
-  var ms=document.getElementById("ev_maSo").value||"……………";
-  var cd=document.getElementById("ev_chucDanh").value||"…………………";
-  var ng=document.getElementById("ev_ngay").value||"…………………";
-  var dc=document.getElementById("ev_dvCT").value||"…………………";
-  var dt=document.getElementById("ev_dvTT").value||"…………………";
-  c(6,1,"Họ tên: "+ht+"    Mã số HV: "+ms); m(6,1,6,8);
-  c(7,1,"Chức danh thực tập: "+cd+"    Ngày thực tập: "+ng); m(7,1,7,8);
-  c(8,1,"Đơn vị công tác (dự kiến): "+dc+"    Đơn vị thực tập: "+dt); m(8,1,8,8);
-
-  c(10,2,"Điểm"); c(10,3,"Mức độ"); c(10,4,"Tiêu chuẩn"); m(10,4,10,7);
-  var thang=[["9 - 10","Xuất sắc","Hoàn thành xuất sắc"],["8 đến < 9","Giỏi","Hoàn thành tốt"],["7 đến < 8","Khá","Hoàn thành khá"],["6 đến < 7","Trung bình","Hoàn thành"],["0 đến < 6","Yếu","Không hoàn thành"]];
-  thang.forEach(function(t,i){ c(11+i,2,t[0]); c(11+i,3,t[1]); c(11+i,4,t[2]); m(11+i,4,11+i,7); });
-  c(17,1,"Ghi chú: Cần ghi rõ lý do đối với các nội dung chấm điểm < 6 và nội dung ưu/khuyết điểm/hướng khắc phục"); m(17,1,17,8);
-
-  c(19,1,"STT"); m(19,1,20,1); c(19,2,"NỘI DUNG"); m(19,2,20,3);
-  c(19,4,"ĐIỂM CHUẨN"); m(19,4,20,4); c(19,5,"TỶ TRỌNG\n(1)"); m(19,5,20,5);
-  c(19,6,"ĐIỂM ĐÁNH GIÁ"); m(19,6,19,7);
-  c(20,6,"Người hướng dẫn\n(2)"); c(20,7,"Qui đổi\n(3)=(1)*(2)");
-  c(19,8,"Học viên\ntự đánh giá"); m(19,8,20,8);
-
-  var row=21; var tNHD=0, tHV=0;
-  ["I","II","III"].forEach(function(sec){
-    var labels={"I":"I/ NGHIỆP VỤ CHUYÊN MÔN","II":"II/ THÁI ĐỘ GIAO TIẾP VÀ HỖ TRỢ","III":"III/ CHẤP HÀNH NỘI QUY, QUY ĐỊNH CỦA ĐƠN VỊ"};
-    c(row,1,labels[sec]); m(row,1,row,8); row++;
-    evCriteria[sec].forEach(function(item,i){
-      var id="ev_"+sec+"_"+i;
-      var nhd=parseFloat(document.getElementById(id+"_nhd").value);
-      var hv =parseFloat(document.getElementById(id+"_hv").value);
-      var qd =!isNaN(nhd)?parseFloat((nhd*item.tt).toFixed(3)):null;
-      c(row,1,item.stt); c(row,2,item.nd); m(row,2,row,3);
-      c(row,4,10); c(row,5,item.tt);
-      if(!isNaN(nhd)){c(row,6,nhd); tNHD+=nhd*item.tt;}
-      if(qd!==null) c(row,7,qd);
-      if(!isNaN(hv)){c(row,8,hv); tHV+=hv*item.tt;}
-      row++;
-    });
-  });
-
-  c(row,1,"TỔNG ĐIỂM"); m(row,1,row,4); c(row,5,1);
-  c(row,6,parseFloat(tNHD.toFixed(2))); c(row,7,parseFloat(tNHD.toFixed(2))); c(row,8,parseFloat(tHV.toFixed(2)));
-  row+=2;
-
-  c(row,1,"NHẬN XÉT CỦA NGƯỜI HƯỚNG DẪN:"); m(row,1,row,8); row++;
-  c(row,1,"a. Ưu điểm: "+(document.getElementById("ev_uuDiem").value||"")); m(row,1,row,8); row+=3;
-  c(row,1,"b. Khuyết điểm: "+(document.getElementById("ev_khuyetDiem").value||"")); m(row,1,row,8); row+=3;
-  c(row,1,"c. Hướng khắc phục: "+(document.getElementById("ev_huongKP").value||"")); m(row,1,row,8); row+=3;
-  var ngDG=document.getElementById("ev_ngayDG").value||"Ngày ….... tháng …… năm …………";
-  c(row,6,ngDG); m(row,6,row,8); row++;
-  c(row,6,"NGƯỜI ĐÁNH GIÁ"); m(row,6,row,8);
-
-  ws["!cols"]=[{wch:5},{wch:10},{wch:40},{wch:10},{wch:10},{wch:14},{wch:13},{wch:12}];
-  ws["!merges"]=merges;
-  ws["!ref"]=XLSX.utils.encode_range({s:{r:0,c:0},e:{r:row+1,c:7}});
-  ws["!pageSetup"]={paperSize:9,orientation:"portrait",fitToPage:true,fitToWidth:1,fitToHeight:0};
-  ws["!margins"]={left:0.5,right:0.5,top:0.75,bottom:0.75,header:0.3,footer:0.3};
-
-  XLSX.utils.book_append_sheet(wb,ws,"DGTT_NVBH CFOOD");
-  var tenFile="PhieuDanhGia_NVBH"+(ht.trim()?"_"+ht.trim().replace(/\s+/g,"_"):"")+".xlsx";
-  XLSX.writeFile(wb,tenFile);
-}
-
-function ev_resetForm(){
-  if(!confirm("Xóa toàn bộ dữ liệu và nhập lại?")) return;
-  ["ev_hoTen","ev_maSo","ev_chucDanh","ev_ngay","ev_dvCT","ev_dvTT","ev_uuDiem","ev_khuyetDiem","ev_huongKP","ev_ngayDG"]
-    .forEach(function(id){ document.getElementById(id).value=""; });
-  ["I","II","III"].forEach(function(sec){
-    evCriteria[sec].forEach(function(_,i){
-      var id="ev_"+sec+"_"+i;
-      ["_nhd","_hv"].forEach(function(s){
-        var el=document.getElementById(id+s);
-        el.value=""; el.style.borderColor="#e5e7eb"; el.style.background="#fff";
-      });
-      document.getElementById(id+"_qd").textContent="–";
-    });
-  });
-  document.getElementById("ev_totalNHD").textContent="–";
-  document.getElementById("ev_totalHV").textContent="–";
-  var b=document.getElementById("ev_ratingBadge");
-  b.textContent="–"; b.style.background="rgba(255,255,255,.2)";
-}
-
-/* ===== END EVAL ===== */
+/* ===== INIT ===== */
 ["toolCost","toolPrice","toolValue2","keepPrice","invSales","invStock","promoCost","promoPrice","riskCost"].forEach(function(id){ const el=document.getElementById(id); if(el) el.addEventListener("blur",function(){ let v=el.value.replace(/\./g,"").replace(/,/g,"."); if(v&&!isNaN(v)) el.value=Number(v).toLocaleString("vi-VN"); }); });
 
-/* ===== INIT ===== */
 changeCalcMode();
 autoCleanExpired();
 renderDashboard();
