@@ -49,6 +49,18 @@ body{background:#f3f4f6}
 .stat-warn{background:#faeeda;color:#854f0b}
 .stat-danger{background:#fcebeb;color:#a32d2d}
 .stat-total{background:#f1f5f9;color:#334155}
+/* Hiển thị nn/mm/yyyy khi ô date chưa có giá trị */
+input[type=date]:not(:valid):before{
+  content: attr(placeholder);
+  color:#9ca3af;
+  pointer-events:none;
+}
+input[type=date]:not(:valid){
+  color: transparent;
+}
+input[type=date]:valid{
+  color: inherit;
+}
 /* ===== ĐÀO TẠO ===== */
 .train-role-btn{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:20px 12px;border-radius:14px;border:2px solid #e5e7eb;background:#fff;cursor:pointer;transition:all .2s;font-weight:600;font-size:14px;box-shadow:0 2px 8px rgba(0,0,0,.06);}
 .train-role-btn:hover{border-color:#c40018;background:#fff5f5;transform:translateY(-2px)}
@@ -164,11 +176,11 @@ body{background:#f3f4f6}
   </select>
   <div id="nsxBlock">
     <label class="font-semibold">Ngày sản xuất (NSX)</label>
-    <input type="date" id="nsx" class="border p-2 rounded w-full">
+    <input type="date" id="nsx" class="border p-2 rounded w-full" placeholder="nn/mm/yyyy">
   </div>
   <div id="hsdBlock">
     <label class="font-semibold">Hạn sử dụng (HSD)</label>
-    <input type="date" id="hsd" class="border p-2 rounded w-full">
+    <input type="date" id="hsd" class="border p-2 rounded w-full" placeholder="nn/mm/yyyy">
   </div>
   <div id="beforeHsdBlock" class="hidden">
     <label class="font-semibold">Thời gian trước HSD</label>
@@ -670,11 +682,68 @@ function backToRolePage(){
 
 /* ===== NAVIGATION ===== */
 function toggleMenu(){ document.getElementById("sidebar").classList.toggle("active"); document.getElementById("overlay").classList.toggle("active"); }
-function stopAllScanner(){ if(qr){ qr.stop().then(function(){qr.clear();}).catch(function(){}); qr=null; } if(qr2){ qr2.stop().then(function(){qr2.clear();}).catch(function(){}); qr2=null; } isScanning=false; }
-function showMain(){ stopAllScanner(); document.getElementById("mainApp").classList.remove("hidden"); document.getElementById("printApp").classList.add("hidden"); document.getElementById("toolApp").classList.add("hidden"); document.getElementById("trainingApp").classList.add("hidden"); document.getElementById("headerTitle").textContent="HỆ THỐNG QUẢN LÝ HSD"; toggleMenu(); }
-function showPrint(){ stopAllScanner(); document.getElementById("mainApp").classList.add("hidden"); document.getElementById("printApp").classList.remove("hidden"); document.getElementById("toolApp").classList.add("hidden"); document.getElementById("trainingApp").classList.add("hidden"); document.getElementById("headerTitle").textContent="IN BẢNG GIÁ QUẦY"; toggleMenu(); }
-function showTool(){ stopAllScanner(); document.getElementById("mainApp").classList.add("hidden"); document.getElementById("printApp").classList.add("hidden"); document.getElementById("toolApp").classList.remove("hidden"); document.getElementById("trainingApp").classList.add("hidden"); document.getElementById("headerTitle").textContent="TRA CỨU NGHIỆP VỤ"; backTool(); toggleMenu(); }
-function showTraining(){ stopAllScanner(); document.getElementById("mainApp").classList.add("hidden"); document.getElementById("printApp").classList.add("hidden"); document.getElementById("toolApp").classList.add("hidden"); document.getElementById("trainingApp").classList.remove("hidden"); document.getElementById("headerTitle").textContent="ĐÀO TẠO THỰC HÀNH"; document.getElementById("trainRolePage").classList.remove("hidden"); document.getElementById("trainManagerPage").classList.add("hidden"); toggleMenu(); }
+
+function stopAllScanner(){
+  if(qr){ qr.stop().then(function(){qr.clear();}).catch(function(){}); qr=null; }
+  if(qr2){ qr2.stop().then(function(){qr2.clear();}).catch(function(){}); qr2=null; }
+  isScanning=false;
+  // Ẩn khung camera
+  var r=document.getElementById("reader"); if(r){ r.classList.add("hidden"); r.innerHTML=""; }
+  var r2=document.getElementById("printReader"); if(r2){ r2.classList.add("hidden"); r2.innerHTML=""; }
+}
+
+function showMain(){
+  stopAllScanner();
+  // Reset toàn bộ form HSD về trạng thái ban đầu
+  document.getElementById("productName").value="";
+  document.getElementById("barcode").value="";
+  document.getElementById("nsx").value="";
+  document.getElementById("hsd").value="";
+  var bhv=document.getElementById("beforeHsdValue"); if(bhv) bhv.value="";
+  var pv=document.getElementById("periodValue"); if(pv) pv.value="";
+  document.getElementById("calcMode").value="full";
+  document.getElementById("result").innerHTML="";
+  changeCalcMode();
+  document.getElementById("mainApp").classList.remove("hidden");
+  document.getElementById("printApp").classList.add("hidden");
+  document.getElementById("toolApp").classList.add("hidden");
+  document.getElementById("trainingApp").classList.add("hidden");
+  document.getElementById("headerTitle").textContent="HỆ THỐNG QUẢN LÝ HSD";
+  toggleMenu();
+}
+
+function showPrint(){
+  stopAllScanner();
+  document.getElementById("mainApp").classList.add("hidden");
+  document.getElementById("printApp").classList.remove("hidden");
+  document.getElementById("toolApp").classList.add("hidden");
+  document.getElementById("trainingApp").classList.add("hidden");
+  document.getElementById("headerTitle").textContent="IN BẢNG GIÁ QUẦY";
+  toggleMenu();
+}
+
+function showTool(){
+  stopAllScanner();
+  document.getElementById("mainApp").classList.add("hidden");
+  document.getElementById("printApp").classList.add("hidden");
+  document.getElementById("toolApp").classList.remove("hidden");
+  document.getElementById("trainingApp").classList.add("hidden");
+  document.getElementById("headerTitle").textContent="TRA CỨU NGHIỆP VỤ";
+  backTool();
+  toggleMenu();
+}
+
+function showTraining(){
+  stopAllScanner();
+  document.getElementById("mainApp").classList.add("hidden");
+  document.getElementById("printApp").classList.add("hidden");
+  document.getElementById("toolApp").classList.add("hidden");
+  document.getElementById("trainingApp").classList.remove("hidden");
+  document.getElementById("headerTitle").textContent="ĐÀO TẠO THỰC HÀNH";
+  document.getElementById("trainRolePage").classList.remove("hidden");
+  document.getElementById("trainManagerPage").classList.add("hidden");
+  toggleMenu();
+}
 
 /* ===== AUTO CLEAN ===== */
 function autoCleanExpired(){ let data=JSON.parse(localStorage.getItem(historyKey)||"[]"); if(!data.length) return; const today=new Date(); today.setHours(0,0,0,0); const filtered=data.filter(function(item){ if(!item.HSD) return true; const h=new Date(item.HSD); if(isNaN(h)) return true; h.setHours(0,0,0,0); return h>=today; }); if(filtered.length!==data.length) localStorage.setItem(historyKey,JSON.stringify(filtered)); }
